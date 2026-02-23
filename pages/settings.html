@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deceptron - Settings</title>
+    <link rel="stylesheet" href="../styles/output.css">
+    <link rel="stylesheet" href="../vendor/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="../styles/sidebar.css">
+    <style>
+        :root {
+            --primary-blue: #0076D6;
+            --accent-cyan: #00DBFF;
+            --accent-rose: #f43f5e;
+            --bg-dark: #070B14;
+            --sidebar-width: 260px;
+        }
+
+        :root {
+            --primary-blue: #0076D6;
+            --accent-cyan: #00DBFF;
+            --accent-rose: #f43f5e;
+            --bg-dark: #070B14;
+            --sidebar-width: 260px;
+
+            /* Theme Tokens */
+            --bg-main: #05080f;
+            --text-main: #e2e8f0;
+            --text-dim: #94a3b8;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --sidebar-bg: rgba(10, 17, 32, 0.98);
+            --card-bg: rgba(16, 28, 45, 0.6);
+            --border-subtle: rgba(255, 255, 255, 0.1);
+        }
+
+        body.light-mode {
+            --bg-main: #f0f9ff;
+            --text-main: #1e293b;
+            --text-dim: #64748b;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --sidebar-bg: rgba(255, 255, 255, 0.9);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --border-subtle: rgba(0, 219, 255, 0.5);
+        }
+
+        body.light-mode .active-member-info {
+            color: #22d3ee !important; /* cyan-400 */
+            font-weight: 500;
+        }
+
+        /* Light Mode Utility Overrides */
+        body.light-mode .bg-white\/5 {
+            background-color: rgba(0, 118, 214, 0.05) !important;
+        }
+
+        body.light-mode .border-white\/10,
+        body.light-mode .border-white\/5 {
+            border-color: rgba(0, 118, 214, 0.1) !important;
+        }
+
+        body.light-mode .text-gray-400 {
+            color: #475569 !important;
+        }
+
+        body.light-mode .text-gray-500 {
+            color: #64748b !important;
+        }
+
+        body.light-mode .text-gray-600 {
+            color: #94a3b8 !important;
+        }
+
+        body.light-mode .bg-slate-800 {
+            background-color: rgba(0, 118, 214, 0.1) !important;
+        }
+
+        body.light-mode h1, 
+        body.light-mode h2, 
+        body.light-mode h3 {
+            color: #1e293b !important;
+        }
+
+        body.light-mode .text-white,
+        body.light-mode .text-gray-100,
+        body.light-mode .text-gray-200,
+        body.light-mode .text-gray-300 {
+            color: #0f172a !important;
+        }
+
+        body.light-mode .bg-primary-blue .text-white,
+        body.light-mode .bg-blue-600 .text-white,
+        body.light-mode button.bg-primary-blue,
+        body.light-mode button.bg-blue-600 {
+            background-color: #00DBFF !important;
+            color: #05080f !important;
+            border: none !important;
+            box-shadow: 0 4px 15px rgba(0, 219, 255, 0.3) !important;
+        }
+
+        body.light-mode button.bg-primary-blue:hover,
+        body.light-mode button.bg-blue-600:hover {
+            background-color: #00c4e0 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 219, 255, 0.4) !important;
+        }
+
+        body.light-mode .text-gray-400,
+        body.light-mode .text-gray-500 {
+            color: #334155 !important;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 5px #10b981; }
+            50% { box-shadow: 0 0 20px #10b981; }
+            100% { box-shadow: 0 0 5px #10b981; }
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            overflow: hidden;
+            width: 100vw;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        body:not(.light-mode) {
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(210,100%,15%,0.15) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(180,100%,10%,0.1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(210,100%,15%,0.15) 0, transparent 50%),
+                radial-gradient(at 50% 100%, hsla(340,100%,10%,0.05) 0, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .heading-font { font-family: 'Orbitron', sans-serif; }
+
+        button, a, select, input[type="range"], input[type="checkbox"], .nav-item, .cursor-pointer {
+            cursor: pointer !important;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .main-content {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .setting-card {
+            background: rgba(16, 28, 45, 0.6);
+            backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.sidebar-collapsed #restore-sidebar {
+            display: flex;
+        }
+
+        .setting-card {
+            background: rgba(16, 28, 45, 0.6);
+            backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .setting-card:hover {
+            background: rgba(16, 28, 45, 0.8);
+            border-color: rgba(0, 219, 255, 0.2);
+            transform: translateY(-5px);
+        }
+
+        body.light-mode .glass, 
+        body.light-mode .setting-card {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border: 2px solid rgba(0, 219, 255, 0.4) !important;
+            box-shadow: 0 10px 40px rgba(0, 118, 214, 0.08) !important;
+            border-radius: 2.5rem !important;
+        }
+
+        body.light-mode .glass:hover,
+        body.light-mode .setting-card:hover {
+            border-color: rgba(0, 219, 255, 0.8) !important;
+            box-shadow: 0 0 40px rgba(0, 219, 255, 0.25), 0 15px 45px rgba(0, 118, 214, 0.15) !important;
+        }
+
+        body.light-mode h1, 
+        body.light-mode h2, 
+        body.light-mode h3 {
+            color: #1e293b !important;
+        }
+
+        body.light-mode .text-gray-400,
+        body.light-mode .text-gray-500 {
+            color: #334155 !important;
+        }
+
+        body.light-mode .preview-area {
+            background: #f1f5f9 !important;
+            border: 2px solid rgba(0, 219, 255, 0.4) !important; 
+        }
+
+        body.light-mode #camOff {
+            background: #f1f5f9 !important;
+        }
+
+        /* Preview Area */
+        .preview-area {
+            background: #000;
+            border-radius: 2rem;
+            overflow: hidden;
+            width: 100%;
+            aspect-ratio: 16/9;
+            position: relative;
+            border: 1px solid rgba(0, 219, 255, 0.1);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+        }
+
+        #webcamPreview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            display: none;
+        }
+
+        .range-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            outline: none;
+        }
+
+        body.light-mode .range-slider {
+            background: rgba(0, 118, 214, 0.15) !important;
+        }
+        
+        body.light-mode .range-slider::-webkit-slider-thumb {
+            box-shadow: 0 0 10px rgba(0, 118, 214, 0.3) !important;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 219, 255, 0.5);
+        }
+
+        /* Dropdowns */
+        select {
+            -webkit-appearance: none;
+            appearance: none;
+            background-color: #161c2b;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+
+        body.light-mode select option {
+            background-color: white;
+            color: #1e293b;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Component Container -->
+    <script type="text/javascript" src="/eel.js"></script>
+    <script src="../js/components/sidebar.js"></script>
+    <script>
+        // Anti-Flash Theme Optimization
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+            if (savedTheme === 'light' || (!savedTheme && prefersLight)) {
+                document.body.classList.add('light-mode');
+            }
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                document.body.classList.add('sidebar-collapsed');
+            }
+        })();
+        initSidebar();
+    </script>
+
+    <main class="main-content">
+        <header class="p-8 pb-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold heading-font">Device Setup</h1>
+                <div class="flex items-center mt-2 text-xs text-cyan-400 font-medium tracking-wide active-member-info">
+                    <span class="status-dot"></span>
+                    Active Member: <span class="ml-1 opacity-80">John Doe • Unit #DECEP-09</span>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button id="theme-toggle" class="p-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-cyan-400 hover:bg-white/10 transition-all cursor-pointer" title="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+
+                <div class="bg-emerald-500/5 border border-emerald-500/10 px-4 py-2 rounded-full flex items-center space-x-3">
+                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                    <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Sensors Synchronized</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            <div class="space-y-6">
+                <!-- Parameters -->
+                <div class="setting-card">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-cyan-400 mb-6 flex items-center">
+                        <i class="fas fa-sliders-h mr-3"></i> Signal Parameters
+                    </h3>
+                    <div class="space-y-6">
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                                <span>Brightness Intensity</span>
+                                <span class="text-cyan-400">50%</span>
+                            </div>
+                            <input type="range" id="brightnessSlider" class="range-slider" min="0" max="100" value="50">
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                                <span>Contrast Ratio</span>
+                                <span class="text-cyan-400">50%</span>
+                            </div>
+                            <input type="range" id="contrastSlider" class="range-slider" min="0" max="100" value="50">
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                                <span>Saturation</span>
+                                <span class="text-cyan-400">50%</span>
+                            </div>
+                            <input type="range" id="saturationSlider" class="range-slider" min="0" max="100" value="50">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setting-card">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-purple-400 mb-6 flex items-center">
+                        <i class="fas fa-tools mr-3"></i> Advanced Tools
+                    </h3>
+                    <div class="space-y-4">
+                        <!-- Mirror Toggle -->
+                        <div class="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5">
+                            <div>
+                                <p class="text-xs font-bold text-gray-300 uppercase">Mirror Camera</p>
+                                <p class="text-[9px] text-gray-500">Flip the video feed horizontally.</p>
+                            </div>
+                            <input type="checkbox" id="mirrorToggle" class="w-4 h-4 accent-purple-500" onchange="applySettings()">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex space-x-4">
+                    <button onclick="saveCameraConfiguration(this)" class="flex-1 py-4 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[10px] font-bold uppercase rounded-xl shadow-[0_4px_15px_rgba(0,219,255,0.1)] hover:bg-cyan-500 hover:text-black transition-all duration-300">Apply Configuration</button>
+                    <button onclick="resetSettings()" class="flex-1 py-4 bg-white/5 border border-white/10 text-white text-[10px] font-bold uppercase rounded-xl hover:bg-white/10 transition-all cursor-pointer">Reset Default</button>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Select Camera at Top -->
+                <div class="setting-card">
+                    <div class="space-y-2">
+                        <label class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Select Camera Source</label>
+                        <select id="camSelect">
+                            <option value="">Loading devices...</option>
+                        </select>
+                    </div>
+                    
+
+                </div>
+
+                <!-- Enlarged Preview -->
+                <div class="preview-area group">
+                    <div id="camOff" class="absolute inset-0 bg-[#020408] flex flex-col items-center justify-center">
+                        <i class="fas fa-video-slash text-6xl text-gray-900 mb-4"></i>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-800">Camera Offline</p>
+                    </div>
+                    <video id="webcamPreview" autoplay playsinline></video>
+                    
+                    <div class="absolute top-6 left-6 flex space-x-3">
+                        <button id="toggleBtn" class="w-12 h-12 flex items-center justify-center bg-rose-500/20 text-rose-500 border border-rose-500/30 rounded-2xl hover:bg-rose-500 hover:text-white transition-all shadow-xl" onclick="toggleCam()">
+                            <i class="fas fa-power-off"></i>
+                        </button>
+                        <div id="statusTag" class="hidden px-4 py-2 bg-black/60 backdrop-blur-md border border-white/10 rounded-xl flex items-center">
+                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-3 animate-pulse"></span>
+                            <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Live Camera Feed</span>
+                        </div>
+                    </div>
+
+                    <div class="absolute bottom-6 right-6">
+                        <span class="text-[10px] font-mono text-gray-500 bg-black/40 px-3 py-1.5 rounded-lg border border-white/5">4K UHD | 60 FPS | 2.4 Gbps</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+
+        const body = document.body;
+        let mediaStream = null;
+        let videoTrack = null;
+
+        // --- Sidebar Logic ---
+        function toggleSidebar() {
+            body.classList.toggle('sidebar-collapsed');
+            localStorage.setItem('sidebarCollapsed', body.classList.contains('sidebar-collapsed'));
+        }
+
+        // --- Theme Logic ---
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = themeToggle ? themeToggle.querySelector('i') : null;
+
+        function toggleTheme() {
+            const isLight = body.classList.toggle('light-mode');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            updateThemeUI(isLight);
+        }
+
+        function updateThemeUI(isLight) {
+            if (!themeIcon) return;
+            themeIcon.className = isLight ? 'fas fa-sun' : 'fas fa-moon';
+            if (themeToggle) {
+                themeToggle.classList.toggle('bg-gray-200', isLight);
+                themeToggle.classList.toggle('text-gray-900', isLight);
+                themeToggle.classList.toggle('border-gray-300', isLight);
+            }
+        }
+
+        if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check session
+            try {
+                const result = await eel.get_current_user()();
+                const user = (result.success && result.data) ? result.data : null;
+                
+                if (!user) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // Update Name
+                const activeMember = document.querySelector('.active-member-info span.ml-1');
+                if (activeMember) activeMember.textContent = `${user.firstName} ${user.lastName} • Unit #${user.username.toUpperCase()}`;
+            } catch (err) { console.error("Session check failed:", err); }
+
+            // Update Theme UI state (icons, buttons)
+            updateThemeUI(body.classList.contains('light-mode'));
+
+            // Initialize Sliders
+            setupSliders();
+            loadSliderValues();
+            setupLogoutHandler();
+        
+            // Populate Devices
+            await populateCameras(); 
+            await loadSavedPreferences();
+        });
+
+        // --- Camera & Settings Logic ---
+        async function populateCameras() {
+            const camSelect = document.getElementById('camSelect');
+            if (!camSelect) return;
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+                    camSelect.innerHTML = '<option value="">Searching...</option>';
+                    return;
+                }
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                camSelect.innerHTML = '';
+                const videoDevices = devices.filter(d => d.kind === 'videoinput');
+                if (videoDevices.length > 0) {
+                    videoDevices.forEach((device, index) => {
+                        const option = document.createElement('option');
+                        option.value = device.deviceId;
+                        option.text = device.label || `Camera ${index + 1}`;
+                        camSelect.appendChild(option);
+                    });
+                } else {
+                    camSelect.innerHTML = '<option value="">No Camera Detected</option>';
+                }
+            } catch (err) {
+                console.error("Error enumerating devices:", err);
+            }
+        }
+
+        async function loadSavedPreferences() {
+            try {
+                const result = await eel.load_preferences()();
+                if (result.success && result.preferences) {
+                    const prefs = result.preferences;
+                    if (prefs.default_camera) document.getElementById('camSelect').value = prefs.default_camera;
+                    if (prefs.brightness) document.getElementById('brightnessSlider').value = prefs.brightness;
+                    if (prefs.contrast) document.getElementById('contrastSlider').value = prefs.contrast;
+                    if (prefs.saturation) document.getElementById('saturationSlider').value = prefs.saturation;
+                    if (prefs.mirror_camera !== undefined) document.getElementById('mirrorToggle').checked = prefs.mirror_camera;
+                    
+                    document.querySelectorAll('.range-slider').forEach(s => {
+                        const display = s.previousElementSibling.querySelector('.text-cyan-400');
+                        if(display) display.innerText = s.value + '%';
+                    });
+                    applySettings();
+                }
+            } catch (e) { console.error("Failed to load preferences:", e); }
+        }
+
+        async function saveCameraConfiguration(btn) {
+             const camId = document.getElementById('camSelect').value;
+             const brightness = document.getElementById('brightnessSlider').value;
+             const contrast = document.getElementById('contrastSlider').value;
+             const saturation = document.getElementById('saturationSlider').value;
+             const mirror = document.getElementById('mirrorToggle').checked;
+             
+             const originalText = btn.innerText;
+             btn.innerText = "SAVING...";
+             btn.disabled = true;
+             
+             try {
+                 const prefs = {
+                     'default_camera': camId,
+                     'brightness': brightness,
+                     'contrast': contrast,
+                     'saturation': saturation,
+                     'mirror_camera': mirror
+                 };
+                 const result = await eel.save_preferences(prefs)();
+                 if (result && result.success) {
+                     btn.innerText = "SAVED!";
+                     btn.classList.add('bg-emerald-500', 'text-black', 'border-emerald-500');
+                     setTimeout(() => {
+                         btn.innerText = originalText;
+                         btn.classList.remove('bg-emerald-500', 'text-black', 'border-emerald-500');
+                         btn.disabled = false;
+                     }, 2000);
+                 }
+             } catch (e) { console.error("Save error:", e); btn.innerText = "ERROR"; setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000); }
+        }
+
+        async function toggleCam() {
+            const video = document.getElementById('webcamPreview');
+            const camOff = document.getElementById('camOff');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const statusTag = document.getElementById('statusTag');
+            const select = document.getElementById('camSelect');
+
+            if (!mediaStream) {
+                try {
+                    const deviceId = select.value;
+                    mediaStream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: deviceId ? { exact: deviceId } : undefined, width: { ideal: 1280 }, height: { ideal: 720 } } });
+                    video.srcObject = mediaStream;
+                    videoTrack = mediaStream.getVideoTracks()[0];
+                    video.style.display = 'block';
+                    camOff.classList.add('hidden');
+                    statusTag.classList.remove('hidden');
+                    toggleBtn.innerHTML = '<i class="fas fa-video"></i>';
+                    toggleBtn.classList.remove('bg-rose-500/20', 'text-rose-500');
+                    toggleBtn.classList.add('bg-emerald-500/20', 'text-emerald-500');
+                    setTimeout(applySettings, 500);
+                } catch (err) { console.error("Camera error:", err); }
+            } else {
+                if(videoTrack) videoTrack.stop();
+                mediaStream = null;
+                videoTrack = null;
+                video.srcObject = null;
+                video.style.display = 'none';
+                camOff.classList.remove('hidden');
+                statusTag.classList.add('hidden');
+                toggleBtn.innerHTML = '<i class="fas fa-power-off"></i>';
+                toggleBtn.classList.add('bg-rose-500/20', 'text-rose-500');
+                toggleBtn.classList.remove('bg-emerald-500/20', 'text-emerald-500');
+            }
+        }
+
+        function setupSliders() {
+            document.querySelectorAll('.range-slider').forEach(slider => {
+                slider.addEventListener('input', (e) => {
+                    const display = e.target.previousElementSibling.querySelector('.text-cyan-400');
+                    if(display) display.innerText = e.target.value + (e.target.dataset.unit || '%');
+                    localStorage.setItem(e.target.id, e.target.value);
+                    applySettings();
+                });
+            });
+        }
+
+        function applySettings() {
+            const brightness = document.getElementById('brightnessSlider').value;
+            const contrast = document.getElementById('contrastSlider').value;
+            const saturation = document.getElementById('saturationSlider').value;
+            const video = document.getElementById('webcamPreview');
+            if(!video) return;
+
+            const bVal = 0.5 + (brightness / 100);
+            const cVal = 0.5 + (contrast / 100);
+            const sVal = 0.5 + (saturation / 100);
+            const mirror = document.getElementById('mirrorToggle').checked;
+            video.style.filter = `brightness(${bVal}) contrast(${cVal}) saturate(${sVal})`;
+            video.style.transform = mirror ? 'scaleX(-1)' : 'scaleX(1)';
+
+            if (videoTrack) {
+                videoTrack.applyConstraints({ advanced: [{ brightness: parseInt(brightness), contrast: parseInt(contrast), saturation: parseInt(saturation) }] }).catch(err => {});
+            }
+        }
+
+        function loadSliderValues() {
+            ['brightnessSlider', 'contrastSlider', 'saturationSlider'].forEach(id => {
+                const val = localStorage.getItem(id) || '50';
+                const el = document.getElementById(id);
+                if(el) el.value = val;
+            });
+            document.querySelectorAll('.range-slider').forEach(s => {
+                const display = s.previousElementSibling.querySelector('.text-cyan-400');
+                if(display) display.innerText = s.value + '%';
+            });
+        }
+
+        function resetSettings() {
+            ['brightnessSlider', 'contrastSlider', 'saturationSlider'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.value = 50;
+                localStorage.removeItem(id);
+            });
+            document.getElementById('mirrorToggle').checked = false;
+            localStorage.removeItem('mirrorToggle');
+            loadSliderValues();
+            applySettings();
+            eel.save_preferences(null)();
+        }
+
+        function setupLogoutHandler() {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if(item.innerText.includes('Logout')) item.onclick = (e) => { e.preventDefault(); closeApp(); }
+            });
+        }
+
+        function closeApp() {
+            if(confirm("Are you sure you want to logout?")) window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

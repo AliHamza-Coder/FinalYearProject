@@ -1,0 +1,1686 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deceptron - Facial Micro-Expression</title>
+    <!-- Eel for Python-JavaScript Communication -->
+    <script src="/eel.js"></script>
+    <link rel="stylesheet" href="../styles/output.css" />
+    <script src="../scripts/chart.min.js"></script>
+    <link rel="stylesheet" href="../vendor/font-awesome/css/all.min.css" />
+    <link rel="stylesheet" href="../styles/sidebar.css" />
+    <script src="../scripts/wavesurfer.js"></script>
+    <!-- Common utilities -->
+    <script src="../js/common/constants.js"></script>
+    <script src="../js/common/utils.js"></script>
+    <script src="../js/common/api.js"></script>
+    <script src="../js/common/auth.js"></script>
+    <script src="../js/common/media-recorder.js"></script>
+    <!-- Components -->
+    <script src="../js/components/sidebar.js"></script>
+    <script src="../js/components/vault-component.js"></script>
+    <script src="../js/components/loader.js"></script>
+    <style>
+
+      :root {
+        --primary-blue: #0076d6;
+        --accent-cyan: #00dbff;
+        --accent-cyan-glow: rgba(0, 219, 255, 0.4);
+        --accent-rose: #f43f5e;
+        --bg-dark: #070b14;
+        --sidebar-width: 260px;
+        --config-width: 320px;
+        --glass-bg: rgba(10, 17, 32, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.08);
+
+        /* Theme Tokens */
+        --bg-main: #05080f;
+        --text-main: #e2e8f0;
+        --text-dim: #94a3b8;
+        --glass-bg: rgba(255, 255, 255, 0.03);
+        --sidebar-bg: rgba(10, 17, 32, 0.98);
+        --card-bg: rgba(16, 28, 45, 0.4);
+        --border-subtle: rgba(255, 255, 255, 0.05);
+      }
+
+      body.light-mode {
+        --bg-main: #f0f9ff;
+        --text-main: #1e293b;
+        --text-dim: #64748b;
+        --glass-bg: rgba(255, 255, 255, 0.7);
+        --sidebar-bg: rgba(255, 255, 255, 0.9);
+        --card-bg: rgba(255, 255, 255, 0.85);
+        --border-subtle: rgba(0, 219, 255, 0.5);
+        background-image: 
+            radial-gradient(at 0% 0%, rgba(224, 242, 254, 0.8) 0, transparent 50%),
+            radial-gradient(at 100% 0%, rgba(207, 250, 254, 0.8) 0, transparent 50%),
+            radial-gradient(at 50% 100%, rgba(240, 249, 255, 1) 0, transparent 50%);
+        background-attachment: fixed;
+      }
+
+      body.light-mode .active-member-info {
+        color: #22d3ee !important;
+        font-weight: 500;
+      }
+
+      /* Light Mode Utility Overrides */
+      body.light-mode h1,
+      body.light-mode h2,
+      body.light-mode h3 {
+        color: #1e293b !important;
+      }
+
+      body.light-mode .text-white,
+      body.light-mode .text-gray-100,
+      body.light-mode .text-gray-200,
+      body.light-mode .text-gray-300 {
+        color: #0f172a !important;
+      }
+
+      body.light-mode .text-gray-400,
+      body.light-mode .text-gray-500 {
+        color: #334155 !important;
+      }
+
+      body.light-mode .bg-white\/5 {
+        background-color: rgba(0, 118, 214, 0.05) !important;
+      }
+
+      body.light-mode .border-white\/10,
+      body.light-mode .border-white\/5 {
+        border-color: rgba(0, 118, 214, 0.1) !important;
+      }
+
+      body.light-mode .text-gray-400 {
+        color: #475569 !important;
+      }
+
+      body.light-mode .text-gray-500 {
+        color: #64748b !important;
+      }
+
+      body.light-mode .text-gray-600 {
+        color: #94a3b8 !important;
+      }
+
+      body.light-mode .bg-slate-800 {
+        background-color: rgba(0, 118, 214, 0.1) !important;
+      }
+
+      body.light-mode h1,
+      body.light-mode h2,
+      body.light-mode h3 {
+        color: #1e293b !important;
+      }
+
+      body.light-mode .text-white,
+      body.light-mode .text-gray-100,
+      body.light-mode .text-gray-200,
+      body.light-mode .text-gray-300 {
+        color: #0f172a !important;
+      }
+
+      body.light-mode .bg-primary-blue .text-white,
+      body.light-mode .bg-blue-600 .text-white,
+      body.light-mode button.bg-primary-blue,
+      body.light-mode button.bg-blue-600 {
+        color: white !important;
+      }
+
+      body.light-mode .text-gray-400,
+      body.light-mode .text-gray-500 {
+        color: #334155 !important;
+      }
+
+        /* Premium Vault Styles */
+        #vaultModal .modal-card {
+            width: 90%;
+            max-width: 900px;
+            max-height: 85vh;
+            border: 2px solid rgba(0, 219, 255, 0.3);
+            box-shadow: 0 0 40px rgba(0, 219, 255, 0.15);
+        }
+        .vault-search-container {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            width: 300px;
+            transition: all 0.3s ease;
+        }
+        .vault-search-container:focus-within {
+            border-color: rgba(0, 219, 255, 0.5);
+            box-shadow: 0 0 15px rgba(0, 219, 255, 0.2);
+        }
+        .vault-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .vault-item:hover {
+            background: rgba(0, 219, 255, 0.08);
+            border-color: rgba(0, 219, 255, 0.4);
+            transform: scale(1.01) translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        background: #10b981;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 0.5rem;
+        animation: pulse-glow 2s infinite;
+      }
+
+      @keyframes pulse-glow {
+        0% {
+          box-shadow: 0 0 5px #10b981;
+        }
+        50% {
+          box-shadow: 0 0 20px #10b981;
+        }
+        100% {
+          box-shadow: 0 0 5px #10b981;
+        }
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg-main);
+        color: var(--text-main);
+        margin: 0;
+        overflow: hidden;
+        width: 100vw;
+        transition:
+          background 0.3s ease,
+          color 0.3s ease;
+      }
+
+      body:not(.light-mode) {
+        background-image:
+          radial-gradient(
+            at 0% 0%,
+            hsla(210, 100%, 15%, 0.15) 0,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 50% 0%,
+            hsla(180, 100%, 10%, 0.1) 0,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 0%,
+            hsla(210, 100%, 15%, 0.15) 0,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 50% 100%,
+            hsla(340, 100%, 10%, 0.05) 0,
+            transparent 50%
+          );
+        background-attachment: fixed;
+      }
+
+      .heading-font {
+        font-family: "Orbitron", sans-serif;
+      }
+
+      .glass {
+        background: var(--card-bg);
+        backdrop-filter: blur(25px) saturate(180%);
+        border: 1px solid var(--border-subtle);
+        border-radius: 1.5rem;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      }
+
+      button,
+      a,
+      select,
+      input[type="checkbox"],
+      input[type="checkbox"] {
+        cursor: pointer !important;
+      }
+
+      /* Sidebar & Layout */
+
+      .config-panel {
+        width: var(--config-width);
+        height: 100vh;
+        background: var(--glass-bg);
+        border-left: 1px solid var(--glass-border);
+        position: fixed;
+        right: 0;
+        top: 0;
+        z-index: 50;
+        padding: 2rem;
+        backdrop-filter: blur(30px) saturate(150%);
+        overflow-y: auto;
+      }
+
+      .main-content {
+        margin-right: var(--config-width);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .glass {
+        background: var(--card-bg);
+        backdrop-filter: blur(25px) saturate(180%);
+        border: 1px solid var(--border-subtle);
+        border-radius: 1.5rem;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      body.light-mode .glass,
+      body.light-mode .video-container {
+        background: rgba(255, 255, 255, 0.95) !important;
+        border: 2px solid rgba(0, 219, 255, 0.4) !important;
+        box-shadow: 0 10px 40px rgba(0, 118, 214, 0.08) !important;
+        border-radius: 2.5rem !important;
+      }
+
+      body.light-mode .glass:hover,
+      body.light-mode .video-container:hover {
+        border-color: #00dbff !important;
+        box-shadow:
+          0 0 30px rgba(0, 219, 255, 0.2),
+          0 20px 50px rgba(0, 118, 214, 0.15) !important;
+        transform: translateY(-4px);
+      }
+
+      body.light-mode h1,
+      body.light-mode h2,
+      body.light-mode h3 {
+        color: #1e293b !important;
+      }
+
+      body.light-mode .bg-primary-blue,
+      body.light-mode .bg-blue-600 {
+        background-color: #00dbff !important;
+        color: #05080f !important;
+        border: none !important;
+        box-shadow: 0 4px 15px rgba(0, 219, 255, 0.3) !important;
+      }
+
+      body.light-mode .bg-primary-blue:hover,
+      body.light-mode .bg-blue-600:hover {
+        background-color: #00c4e0 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(0, 219, 255, 0.4) !important;
+      }
+
+      body.light-mode .text-gray-400,
+      body.light-mode .text-gray-500 {
+        color: #334155 !important;
+      }
+
+      body.light-mode #camOffState {
+        background: #f1f5f9 !important;
+        color: #475569 !important;
+      }
+
+      /* Video / Scanning Area */
+      .video-container {
+        position: relative;
+        background: #000;
+        border-radius: 2rem;
+        overflow: hidden;
+        border: 1px solid rgba(0, 219, 255, 0.1);
+        aspect-ratio: 16/9;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      }
+
+      /* Removed scanline animation */
+
+      /* Toggle Switches */
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 22px;
+      }
+
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #cbd5e1;
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+
+      body:not(.light-mode) .slider {
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      /* Modal Styling */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(10px);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal-content {
+        width: 100%;
+        max-width: 600px;
+        background: #0a1120;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 2rem;
+        padding: 2rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      }
+
+      .vault-item {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 1.25rem;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .vault-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--accent-cyan);
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      input:checked + .slider {
+        background-color: var(--primary-blue);
+      }
+      input:checked + .slider:before {
+        transform: translateX(22px);
+      }
+
+      /* Dropdown Styling */
+      select {
+        background-color: #161c2b !important;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+        padding: 0.75rem;
+        border-radius: 0.75rem;
+        width: 100%;
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        background-position: right 0.75rem center;
+        background-repeat: no-repeat;
+        background-size: 1rem;
+      }
+
+      select option {
+        background-color: #161c2b;
+        color: #ffffff;
+      }
+
+      select:focus {
+        outline: none;
+        border-color: var(--accent-cyan);
+      }
+
+      /* Metric Item */
+      .metric-item {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 1.25rem;
+        padding: 1rem 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.3s ease;
+      }
+
+      body.light-mode .metric-item {
+        background: #f8fafc;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .metric-item:hover {
+        border-color: var(--accent-cyan);
+        background: rgba(0, 219, 255, 0.05);
+        transform: translateX(5px);
+      }
+
+      ::-webkit-scrollbar {
+        width: 4px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+      }
+
+      .logo-section {
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 120px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .logo-section img {
+        width: 100%;
+        height: 100%;
+        filter: drop-shadow(0 0 10px rgba(0, 219, 255, 0.5));
+      }
+      /* Dropdown Styling Fix */
+      select option {
+        background-color: #0d1526;
+        color: white;
+      }
+
+      body.light-mode select option {
+        background-color: white;
+        color: #1e293b;
+      }
+
+      select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        background-position: right 0.75rem center;
+        background-repeat: no-repeat;
+        background-size: 1rem;
+      }
+      /* Fix for mirrored video controls */
+      video[style*="scaleX(-1)"]::-webkit-media-controls {
+        transform: scaleX(-1);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Sidebar Component Container -->
+    <script>
+      // Anti-Flash Theme Optimization
+      (function() {
+        const savedTheme = localStorage.getItem('theme');
+        const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        if (savedTheme === 'light' || (!savedTheme && prefersLight)) {
+          document.body.classList.add('light-mode');
+        }
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+          document.body.classList.add('sidebar-collapsed');
+        }
+      })();
+      initSidebar();
+    </script>
+
+    <!-- Evidence Vault Modal -->
+    <div id="vaultModal" class="modal-backdrop">
+      <div class="modal-content">
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <h2
+              class="text-xl font-bold heading-font text-white uppercase tracking-wider"
+            >
+              Recording Library
+            </h2>
+            <p
+              class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-1"
+            >
+              Select video file for deep scan
+            </p>
+          </div>
+          <button
+            onclick="closeVault()"
+            class="text-gray-500 hover:text-white transition-colors text-xl"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div
+          class="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar"
+        >
+          <div
+            class="vault-item group"
+            onclick="loadMockFile('suspect_interview_01.mp4')"
+          >
+            <div class="flex items-center space-x-4">
+              <div
+                class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20"
+              >
+                <i class="fas fa-video text-lg"></i>
+              </div>
+              <div>
+                <p class="text-sm font-bold text-white">
+                  suspect_interview_01.mp4
+                </p>
+                <p class="text-[9px] text-gray-500 font-mono">
+                  124.5 MB • 14:20 • RAW_AV
+                </p>
+              </div>
+            </div>
+            <i
+              class="fas fa-chevron-right text-gray-700 group-hover:text-cyan-400 transition-colors"
+            ></i>
+          </div>
+
+          <div
+            class="vault-item group"
+            onclick="loadMockFile('debrief_session_cam1.mp4')"
+          >
+            <div class="flex items-center space-x-4">
+              <div
+                class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20"
+              >
+                <i class="fas fa-video text-lg"></i>
+              </div>
+              <div>
+                <p class="text-sm font-bold text-white">
+                  debrief_session_cam1.mp4
+                </p>
+                <p class="text-[9px] text-gray-500 font-mono">
+                  110.2 MB • 08:30 • RAW_AV
+                </p>
+              </div>
+            </div>
+            <i
+              class="fas fa-chevron-right text-gray-700 group-hover:text-cyan-400 transition-colors"
+            ></i>
+          </div>
+
+          <div class="vault-item group opacity-50 cursor-not-allowed">
+            <div class="flex items-center space-x-4">
+              <div
+                class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20"
+              >
+                <i class="fas fa-microphone text-lg"></i>
+              </div>
+              <div>
+                <p class="text-sm font-bold text-white">witness_call_log.wav</p>
+                <p class="text-[9px] text-gray-500 font-mono italic">
+                  Audio-only (Switch to Voice Analysis)
+                </p>
+              </div>
+            </div>
+            <i class="fas fa-lock text-gray-700"></i>
+          </div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-white/5 flex justify-end">
+          <p class="text-[9px] text-gray-600 uppercase tracking-widest">
+            Showing locally stored evidence records
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Configuration Panel -->
+    <aside class="config-panel flex flex-col gap-6">
+      <div class="flex items-center justify-between mb-2">
+        <h3
+          class="text-xs font-bold uppercase tracking-widest text-cyan-400 flex items-center"
+        >
+          <i class="fas fa-cog mr-2"></i> Configuration
+        </h3>
+      </div>
+
+      <div
+        class="h-[1px] bg-gradient-to-r from-cyan-500/50 to-transparent mb-4"
+      ></div>
+
+      <!-- Source Section -->
+      <div class="space-y-6">
+        <div class="space-y-2">
+          <label
+            class="text-[9px] text-gray-500 font-bold uppercase tracking-widest"
+            >Video Source</label
+          >
+          <select
+            id="videoSource"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-cyan-400 appearance-none transition-all cursor-pointer"
+          >
+            <option>Detecting Camera...</option>
+          </select>
+        </div>
+
+        <div class="space-y-4">
+          <label
+            class="text-[9px] text-gray-500 font-bold uppercase tracking-widest block"
+            >Source Controls</label
+          >
+          <div class="grid grid-cols-2 gap-3">
+            <button
+              id="mainCamBtn"
+              class="py-2.5 bg-rose-500/10 border border-rose-500/30 text-rose-500 text-[9px] font-bold uppercase rounded-xl hover:bg-rose-500 hover:text-white transition-all duration-300 flex items-center justify-center gap-2"
+              onclick="toggleCamera()"
+            >
+              <i class="fas fa-video-slash"></i> Camera Off
+            </button>
+            <button
+              id="clearVaultBtn"
+              class="py-2.5 bg-rose-500/10 border border-rose-500/30 text-rose-500 text-[9px] font-bold uppercase rounded-xl hover:bg-rose-500 hover:text-white transition-all duration-300 flex items-center justify-center gap-2"
+              onclick="clearVault()"
+            >
+              <i class="fas fa-undo"></i> Clear Vault
+            </button>
+          </div>
+        </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="h-[1px] bg-white/5"></div>
+
+      <!-- Overlays Section -->
+      <div class="space-y-4">
+        <label
+          class="text-[9px] text-gray-500 font-bold uppercase tracking-widest block"
+          >Targeted Scanning Modules</label
+        >
+
+        <div class="metric-item">
+          <div class="flex items-center gap-3">
+            <i class="fas fa-user-circle text-[10px] text-cyan-400"></i>
+            <span class="text-xs font-bold text-gray-300">Face Detection</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggleFace" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="metric-item">
+          <div class="flex items-center gap-3">
+            <i class="fas fa-smile text-[10px] text-emerald-400"></i>
+            <span class="text-xs font-bold text-gray-300">Emotion Detection</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggleEmotion" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="metric-item">
+          <div class="flex items-center gap-3">
+            <i class="fas fa-eye text-[10px] text-cyan-400"></i>
+            <span class="text-xs font-bold text-gray-300">Eye Movement</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggleEyeMove" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="metric-item">
+          <div class="flex items-center gap-3">
+            <i class="fas fa-arrows-to-eye text-[10px] text-cyan-400"></i>
+            <span class="text-xs font-bold text-gray-300">Eye Jumps</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggleEyeJumps" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="metric-item">
+          <div class="flex items-center gap-3">
+            <i class="fas fa-wave-square text-[10px] text-amber-500"></i>
+            <span class="text-xs font-bold text-gray-300">Small Muscle Twitch</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggleMuscleTwitch" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="metric-item">
+          <div class="flex items-center gap-3">
+            <i class="fas fa-wind text-[10px] text-rose-500"></i>
+            <span class="text-xs font-bold text-gray-300">Nasal Dilation</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggleNasal" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="metric-item">
+          <div class="flex items-center gap-3">
+            <i class="fas fa-smile-beam text-[10px] text-emerald-500"></i>
+            <span class="text-xs font-bold text-gray-300">Cheeks Analysis</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggleCheeks" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="metric-item">
+          <div class="flex items-center gap-3">
+            <i class="fas fa-grip-lines text-[10px] text-cyan-400"></i>
+            <span class="text-xs font-bold text-gray-300">Jaw Micro-Twitch</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggleJaw" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="metric-item">
+          <div class="flex items-center gap-3">
+            <i class="fas fa-network-wired text-[10px] text-purple-400"></i>
+            <span class="text-xs font-bold text-gray-300">Facial Mesh</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggleMesh" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="mt-auto pt-6">
+        <button
+          class="w-full py-3 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[9px] font-bold uppercase rounded-xl hover:bg-cyan-500 hover:text-white transition-all flex items-center justify-center gap-2"
+          onclick="resetConfigurations()"
+        >
+          <i class="fas fa-sync-alt"></i> Reset to Default
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="p-8 pb-4 flex justify-between items-center">
+        <div>
+          <h1 class="text-2xl font-bold heading-font">Facial Analysis Unit</h1>
+          <div
+            class="flex items-center mt-2 text-xs text-cyan-400 font-medium tracking-wide active-member-info"
+          >
+            <span class="status-dot"></span>
+            Active Member:
+            <span class="ml-1 opacity-80">ALI HAMZA • Unit #ALI</span>
+          </div>
+        </div>
+        <div class="flex items-center space-x-3">
+          <button
+            id="theme-toggle"
+            class="p-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-cyan-400 hover:bg-white/10 transition-all cursor-pointer"
+            title="Toggle Theme"
+          >
+            <i class="fas fa-moon"></i>
+          </button>
+          
+          <div class="bg-gray-800/40 border border-white/5 px-4 py-2 rounded-xl flex items-center space-x-3">
+            <span id="statusTag" class="text-[10px] text-gray-400 uppercase font-bold tracking-widest">System Ready</span>
+            <div id="statusDot" class="w-2 h-2 bg-gray-500 rounded-full transition-all duration-500"></div>
+          </div>
+
+          <div class="flex items-center space-x-4">
+            <button
+              class="bg-white/5 hover:bg-white/10 text-white text-[10px] font-bold uppercase py-2.5 px-6 rounded-xl border border-white/10 transition-all"
+              onclick="openVaultSelection()"
+            >
+              <i class="fas fa-folder-open mr-2 text-primary-blue"></i> Evidence
+              Vault
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Monitoring Section -->
+      <div class="px-4">
+          <div class="video-container group">
+              <div
+                id="camOffState"
+                class="absolute inset-0 bg-[#020408] flex flex-col items-center justify-center text-gray-800 transition-opacity duration-500 z-10"
+              >
+                <i class="fas fa-video-slash text-7xl mb-6 opacity-20"></i>
+                <p
+                  class="text-sm font-mono tracking-[0.3em] uppercase opacity-30"
+                >
+                  Camera Interface: Offline
+                </p>
+                <button
+                  class="mt-6 px-6 py-2 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-bold uppercase rounded-full hover:bg-cyan-500 hover:text-white transition-all"
+                  onclick="toggleCamera()"
+                >
+                  Turn on Camera
+                </button>
+              </div>
+
+              <div id="camOnState" class="absolute inset-0 bg-black hidden">
+                <div
+                  class="absolute inset-0 bg-cyan-900/10 flex items-center justify-center text-gray-600"
+                >
+                  <i class="fas fa-spinner fa-spin text-4xl text-cyan-500"></i>
+                </div>
+                <video
+                  id="webcam"
+                  class="absolute inset-0 w-full h-full object-cover"
+                  style="transform: scaleX(-1);"
+                  muted
+                ></video>
+                <!-- Hidden canvas for recording capture -->
+                <canvas id="recordCanvas" class="hidden"></canvas>
+              </div>
+
+              <!-- Notification Toast inside Video -->
+              <div
+                id="videoToast"
+                class="absolute top-20 left-1/2 -translate-x-1/2 z-30 transition-all duration-500 opacity-0 translate-y-4"
+              >
+                <div
+                  class="px-6 py-2 bg-cyan-500 text-white text-[10px] font-bold uppercase rounded-full shadow-lg shadow-cyan-500/40"
+                >
+                  Scanner & Interface Online
+                </div>
+              </div>
+          </div>
+        <!-- Recording Controls Bar -->
+        <div class="glass mt-4 p-4 flex justify-between items-center px-6">
+            <div class="flex items-center space-x-4">
+                <button id="camBtn" class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center hover:bg-cyan-500 hover:text-white transition-all duration-300" onclick="toggleCamera()">
+                    <i class="fas fa-camera"></i>
+                </button>
+                <!-- Pause Button -->
+                <button id="pauseBtn" class="w-10 h-10 rounded-xl flex items-center justify-center text-amber-500 hover:text-white hover:bg-amber-500 transition-all border border-amber-500/20 hidden" onclick="togglePause()">
+                  <i class="fas fa-pause"></i>
+                </button>
+                <div class="h-8 w-[1px] bg-white/10 mx-2"></div>
+                <!-- REC Indicator -->
+                <div id="recIndicator" class="flex items-center bg-rose-500/10 border border-rose-500/20 px-2 py-1 rounded-md hidden">
+                    <span class="w-2 h-2 bg-rose-600 rounded-full animate-pulse mr-1.5"></span>
+                    <span class="text-[9px] font-bold text-rose-500 uppercase tracking-tighter">REC</span>
+                </div>
+                <!-- Timer -->
+                <div id="recordingTimer" class="text-xl font-mono text-white/80 tabular-nums">00:00:00</div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button
+                    id="sessionBtn"
+                    class="px-8 py-3 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold uppercase rounded-xl transition-all shadow-lg shadow-cyan-500/20"
+                    onclick="handleSessionToggle()"
+                >
+                    <i class="fas fa-play mr-2"></i> Start Recording
+                </button>
+                <button
+                    id="analyseBtn"
+                    class="px-8 py-3 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold uppercase rounded-xl transition-all shadow-lg shadow-cyan-500/20 hidden"
+                    onclick="finalizeAnalysis()"
+                >
+                    <i class="fas fa-brain mr-2"></i> Analyse
+                </button>
+            </div>
+        </div>
+      </div>
+
+      <!-- Analysis Grid -->
+      <div class="grid grid-cols-12 gap-6 px-4 pb-8">
+        <!-- Left: Emotion Radar -->
+        <div
+          class="col-span-12 lg:col-span-7 glass p-8 relative overflow-hidden"
+        >
+          <div class="flex justify-between items-center mb-8">
+            <h3
+              class="text-xs font-black uppercase tracking-[0.2em] text-gray-400"
+            >
+              Emotion Tracker
+            </h3>
+            <div class="flex space-x-2">
+              <span
+                class="px-2.5 py-1 bg-cyan-100/50 text-cyan-500 text-[9px] font-black rounded-lg border border-cyan-200"
+                >RADAR_ACTIVE</span
+              >
+            </div>
+          </div>
+          <div class="h-64 flex items-center justify-center">
+            <canvas id="radarChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Right: Micro-Expression List -->
+        <div class="col-span-12 lg:col-span-5 glass p-8 space-y-8">
+          <h3
+            class="text-xs font-black uppercase tracking-[0.2em] text-gray-400"
+          >
+            Live Sign Strength
+          </h3>
+
+          <div class="space-y-6">
+            <div class="space-y-2">
+              <div class="flex justify-between items-center mb-1">
+                <span
+                  class="text-[10px] font-black uppercase text-gray-500 tracking-wider"
+                  >Lip Compression</span
+                >
+                <span
+                  id="valLip"
+                  class="text-xs font-mono text-cyan-500 font-bold"
+                  >42%</span
+                >
+              </div>
+              <div
+                class="h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50 shadow-inner"
+              >
+                <div
+                  id="barLip"
+                  class="h-full bg-cyan-400 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(0,219,255,0.4)]"
+                  style="width: 42%"
+                ></div>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex justify-between items-center mb-1">
+                <span
+                  class="text-[10px] font-black uppercase text-gray-500 tracking-wider"
+                  >Eyebrow Twitch</span
+                >
+                <span
+                  id="valBrow"
+                  class="text-xs font-mono text-amber-500 font-bold"
+                  >18%</span
+                >
+              </div>
+              <div
+                class="h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50 shadow-inner"
+              >
+                <div
+                  id="barBrow"
+                  class="h-full bg-amber-400 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(251,191,36,0.4)]"
+                  style="width: 18%"
+                ></div>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex justify-between items-center mb-1">
+                <span
+                  class="text-[10px] font-black uppercase text-gray-500 tracking-wider"
+                  >Pupil Dilataton</span
+                >
+                <span
+                  id="valPupil"
+                  class="text-xs font-mono text-rose-500 font-bold"
+                  >65%</span
+                >
+              </div>
+              <div
+                class="h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50 shadow-inner"
+              >
+                <div
+                  id="barPupil"
+                  class="h-full bg-rose-400 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(244,63,94,0.4)]"
+                  style="width: 65%"
+                ></div>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex justify-between items-center mb-1">
+                <span
+                  class="text-[10px] font-black uppercase text-gray-500 tracking-wider"
+                  >Nostril Flare</span
+                >
+                <span
+                  id="valNose"
+                  class="text-xs font-mono text-emerald-500 font-bold"
+                  >12%</span
+                >
+              </div>
+              <div
+                class="h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50 shadow-inner"
+              >
+                <div
+                  id="barNose"
+                  class="h-full bg-emerald-400 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(52,211,153,0.4)]"
+                  style="width: 12%"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+
+    <!-- Media Player Modal -->
+    <div id="playerModal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-md" onclick="closePlayer()"></div>
+        </div>
+    </div>
+
+    <!-- Modal for Saving Session -->
+    <div
+      id="saveModal"
+      class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[999] hidden flex items-center justify-center opacity-0 transition-all duration-300"
+    >
+      <div
+        class="bg-[#0b121f] border border-white/10 p-10 rounded-3xl w-full max-w-lg transform scale-95 transition-all duration-300 shadow-2xl"
+      >
+        <h2 class="text-2xl font-bold heading-font text-white mb-2">
+          Save Recording
+        </h2>
+        <p class="text-xs text-gray-400 mb-8">
+          Finalize and encrypt the facial analysis for permanent storage.
+        </p>
+
+        <div class="space-y-5">
+          <div class="space-y-2">
+            <label
+              class="text-[10px] font-bold text-gray-500 uppercase tracking-widest"
+              >Subject Identifier</label
+            >
+            <input
+              id="subjectIdInput"
+              type="text"
+              placeholder="Enter name or ID..."
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-400 focus:outline-none transition-all"
+            />
+          </div>
+        </div>
+
+        <div class="mt-10 flex flex-col space-y-3">
+          <button
+            class="w-full py-4 bg-cyan-500 text-[#05080f] text-xs font-bold uppercase rounded-xl shadow-lg shadow-cyan-500/30 transition-all font-bold"
+            onclick="saveData()"
+          >
+            Save Record
+          </button>
+          <div class="flex space-x-3">
+            <button
+              class="flex-1 py-3 bg-white/5 hover:bg-white/10 text-[10px] font-bold uppercase rounded-xl transition-all text-gray-400"
+              onclick="closeSaveModal()"
+            >
+              Continue Recording
+            </button>
+            <button
+              class="flex-1 py-3 bg-red-500/10 hover:bg-red-500/20 text-[10px] font-bold uppercase rounded-xl transition-all text-red-500 border border-red-500/20"
+              onclick="discardSession()"
+            >
+              Discard & Reset
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Global State
+      const body = document.body;
+      let cameraOn = false;
+      let mediaStream = null;
+      let vaultData = [];
+
+      // --- Theme Toggle Logic ---
+      const themeToggle = document.getElementById("theme-toggle");
+      const themeIcon = themeToggle ? themeToggle.querySelector("i") : null;
+
+      function toggleTheme() {
+        const isLight = body.classList.toggle("light-mode");
+        localStorage.setItem("theme", isLight ? "light" : "dark");
+        updateThemeUI(isLight);
+        if (typeof updateChartsTheme === 'function') updateChartsTheme(isLight);
+      }
+
+      function updateThemeUI(isLight) {
+        if (!themeIcon || !themeToggle) return;
+        themeIcon.className = isLight ? "fas fa-sun" : "fas fa-moon";
+        themeToggle.classList.toggle("bg-gray-200", isLight);
+        themeToggle.classList.toggle("text-gray-900", isLight);
+        themeToggle.classList.toggle("border-gray-300", isLight);
+      }
+
+      if (themeToggle) themeToggle.addEventListener("click", toggleTheme);
+
+      // --- Radar Chart Initialization ---
+      const ctxRadar = document.getElementById("radarChart").getContext("2d");
+      const radarChart = new Chart(ctxRadar, {
+        type: "radar",
+        data: {
+          labels: ["Joy", "Anger", "Disgust", "Fear", "Sadness", "Surprise", "Neutral"],
+          datasets: [
+            {
+              label: "Live Signal",
+              data: [10, 20, 15, 82, 45, 30, 25],
+              backgroundColor: "rgba(0, 219, 255, 0.15)",
+              borderColor: "#00DBFF",
+              pointBackgroundColor: "#00DBFF",
+              pointBorderColor: "#fff",
+              borderWidth: 2,
+              pointRadius: 3,
+            },
+            {
+              label: "Baseline",
+              data: [15, 10, 5, 20, 10, 15, 70],
+              backgroundColor: "rgba(255, 255, 255, 0.05)",
+              borderColor: "rgba(255, 255, 255, 0.2)",
+              pointRadius: 0,
+              borderWidth: 1,
+              borderDash: [5, 5],
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              angleLines: { color: "rgba(255, 255, 255, 0.05)" },
+              grid: { color: "rgba(255, 255, 255, 0.05)" },
+              pointLabels: {
+                color: "#64748b",
+                font: { size: 9, weight: "bold" },
+              },
+              ticks: { display: false },
+            },
+          },
+          plugins: { legend: { display: false } },
+        },
+      });
+
+      function updateChartsTheme(isLight) {
+        if (!radarChart) return;
+        const gridColor = isLight ? "rgba(0, 0, 0, 0.12)" : "rgba(255, 255, 255, 0.05)";
+        const labelColor = isLight ? "#27374d" : "#64748b";
+
+        radarChart.options.scales.r.angleLines.color = gridColor;
+        radarChart.options.scales.r.grid.color = gridColor;
+        radarChart.options.scales.r.pointLabels.color = labelColor;
+
+        radarChart.data.datasets[1].borderColor = isLight ? "rgba(0, 0, 0, 0.1)" : "rgba(255, 255, 255, 0.2)";
+        radarChart.data.datasets[1].backgroundColor = isLight ? "rgba(0, 0, 0, 0.02)" : "rgba(255, 255, 255, 0.05)";
+        radarChart.update();
+      }
+
+      // --- Sidebar Logic ---
+      function toggleSidebar() {
+        body.classList.toggle("sidebar-collapsed");
+        localStorage.setItem("sidebarCollapsed", body.classList.contains("sidebar-collapsed"));
+      }
+
+      // --- Camera & Devices Logic ---
+      async function populateDevices() {
+        const vSelect = document.getElementById('videoSource');
+        if (!vSelect) return;
+        try {
+          if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+            vSelect.innerHTML = '<option value="">Searching...</option>';
+            return;
+          }
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          vSelect.innerHTML = '';
+          const videoDevices = devices.filter(d => d.kind === 'videoinput');
+          videoDevices.forEach((device, index) => {
+            const option = document.createElement('option');
+            option.value = device.deviceId;
+            option.text = device.label || `Camera ${index + 1}`;
+            vSelect.appendChild(option);
+          });
+          
+          if (videoDevices.length > 0) {
+             const result = await eel.load_preferences()();
+             if (result.success && result.preferences) {
+                if (result.preferences.default_camera) {
+                   const exists = videoDevices.some(d => d.deviceId === result.preferences.default_camera);
+                   if (exists) vSelect.value = result.preferences.default_camera;
+                }
+                const v = document.getElementById('webcam');
+                if (v) {
+                   const b = result.preferences.brightness || 50;
+                   const c = result.preferences.contrast || 50;
+                   const s = result.preferences.saturation || 50;
+                   const mirror = result.preferences.mirror_camera || false;
+                   v.style.filter = `brightness(${0.5 + b/100}) contrast(${0.5 + c/100}) saturate(${0.5 + s/100})`;
+                   v.style.transform = mirror ? 'scaleX(-1)' : 'scaleX(1)';
+                }
+             }
+          }
+          if (videoDevices.length === 0) vSelect.innerHTML = '<option value="">No Camera Detected</option>';
+        } catch (err) { console.error("Error enumerating devices:", err); }
+      }
+
+      async function toggleCamera() {
+        const off = document.getElementById("camOffState");
+        const on = document.getElementById("camOnState");
+        const mainBtn = document.getElementById("mainCamBtn");
+        const camBtn = document.getElementById("camBtn");
+        const toast = document.getElementById("videoToast");
+        const video = document.getElementById("webcam");
+        const vSelect = document.getElementById('videoSource');
+
+        if (!cameraOn) {
+          try {
+            const cameraId = vSelect.value;
+            const constraints = { video: cameraId ? { deviceId: { ideal: cameraId } } : true, audio: false };
+            mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+            video.srcObject = mediaStream;
+            video.src = "";
+            await video.play();
+            cameraOn = true;
+            
+            off.style.opacity = "0";
+            setTimeout(() => {
+              off.classList.add("hidden");
+              on.classList.remove("hidden");
+              on.classList.add("flex");
+              
+              if (mainBtn) {
+                  mainBtn.innerHTML = '<i class="fas fa-video mr-2"></i> Camera On';
+                  mainBtn.classList.remove("bg-rose-500/10", "text-rose-500", "border-rose-500/30");
+                  mainBtn.classList.add("bg-cyan-500/10", "text-cyan-500", "border-cyan-500/30", "hover:bg-cyan-500", "hover:text-white");
+              }
+              if (camBtn) camBtn.classList.add("active");
+
+              // Show Toast
+              toast.classList.remove("opacity-0", "translate-y-4");
+              toast.classList.add("opacity-1", "translate-y-0");
+              setTimeout(() => {
+                toast.classList.add("opacity-0", "translate-y-4");
+              }, 2000);
+            }, 300);
+            
+            video.style.transform = "scaleX(-1)";
+            updateStatusUI('live', 'Live Feed');
+            populateDevices();
+          } catch (err) { console.error("Error accessing camera:", err); cameraOn = false; }
+        } else {
+          if (mediaStream) { mediaStream.getTracks().forEach(track => track.stop()); mediaStream = null; }
+          video.srcObject = null;
+          video.src = ""; // Clear vault
+          video.removeAttribute('controls');
+          cameraOn = false;
+          on.classList.add("hidden");
+          on.classList.remove("flex");
+          off.classList.remove("hidden");
+          setTimeout(() => off.style.opacity = "1", 10);
+          
+          if (mainBtn) {
+              mainBtn.innerHTML = '<i class="fas fa-video-slash"></i> Camera Off';
+              mainBtn.classList.add("bg-rose-500/10", "text-rose-500", "border-rose-500/30");
+              mainBtn.classList.remove("bg-cyan-500/10", "text-cyan-500", "border-cyan-500/30", "hover:bg-cyan-500", "hover:text-white");
+          }
+          if (camBtn) camBtn.classList.remove("active");
+          
+          video.style.transform = "none";
+          updateStatusUI('ready', 'System Ready');
+          
+          if (isRecording) handleSessionToggle(); // End session if camera turned off
+        }
+      }
+
+      let isRecording = false;
+      let mediaRecorder;
+      let recordedChunks = [];
+      let startTime;
+      let timerInterval;
+
+      function updateTimer() {
+        if (!startTime) return;
+        const now = new Date();
+        const diff = new Date(now - startTime);
+        const h = String(diff.getUTCHours()).padStart(2, '0');
+        const m = String(diff.getUTCMinutes()).padStart(2, '0');
+        const s = String(diff.getUTCSeconds()).padStart(2, '0');
+        document.getElementById("recordingTimer").innerText = `${h}:${m}:${s}`;
+      }
+
+      function handleSessionToggle() {
+        const btn = document.getElementById("sessionBtn");
+        const pauseBtn = document.getElementById("pauseBtn");
+        const recIndicator = document.getElementById("recIndicator");
+        const toast = document.getElementById("videoToast");
+        
+        if (!isRecording) {
+          if (!mediaStream) {
+            alert("Please turn on the camera first.");
+            return;
+          }
+          
+          recordedChunks = [];
+          // Video-only recording
+          const options = MediaRecorder.isTypeSupported('video/webm;codecs=vp8') 
+              ? { mimeType: 'video/webm;codecs=vp8' } 
+              : {};
+          
+          mediaRecorder = new MediaRecorder(mediaStream, options);
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) recordedChunks.push(event.data);
+          };
+          mediaRecorder.start(1000);
+          isRecording = true;
+          btn.innerHTML = '<i class="fas fa-stop-circle mr-2"></i> End Session';
+          btn.classList.remove("bg-cyan-600", "shadow-cyan-500/20");
+          btn.classList.add("bg-red-600", "shadow-red-500/20");
+          
+          if (pauseBtn) pauseBtn.classList.remove("hidden");
+          if (recIndicator) recIndicator.classList.remove("hidden");
+          
+          startTime = new Date();
+          timerInterval = setInterval(updateTimer, 1000);
+          updateStatusUI('live', 'Recording Active');
+
+          // Show Toast
+          toast.querySelector("div").innerText = "Recording Started";
+          toast.classList.remove("opacity-0", "translate-y-4");
+          toast.classList.add("opacity-1", "translate-y-0");
+          setTimeout(() => {
+            toast.classList.add("opacity-0", "translate-y-4");
+          }, 1500);
+        } else {
+          mediaRecorder.stop();
+          if (mediaStream) {
+            mediaStream.getTracks().forEach(track => track.stop());
+            mediaStream = null;
+          }
+          if (pauseBtn) pauseBtn.classList.add("hidden");
+          if (recIndicator) recIndicator.classList.add("hidden");
+          clearInterval(timerInterval);
+          openSaveModal();
+        }
+      }
+
+      function togglePause() {
+        const pauseBtn = document.getElementById('pauseBtn');
+        if (mediaRecorder.state === "recording") {
+          mediaRecorder.pause();
+          pauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+          pauseBtn.classList.remove("text-amber-500", "border-amber-500/20");
+          pauseBtn.classList.add("bg-amber-500", "text-white");
+        } else if (mediaRecorder.state === "paused") {
+          mediaRecorder.resume();
+          pauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+          pauseBtn.classList.add("text-amber-500", "border-amber-500/20");
+          pauseBtn.classList.remove("bg-amber-500", "text-white");
+        }
+      }
+
+      function openSaveModal() {
+        const m = document.getElementById("saveModal");
+        m.classList.remove("hidden");
+        setTimeout(() => {
+          m.classList.remove("opacity-0");
+          m.querySelector("div").classList.remove("scale-95");
+          m.querySelector("div").classList.add("scale-100");
+        }, 10);
+      }
+
+      function closeSaveModal() {
+        const m = document.getElementById("saveModal");
+        m.classList.add("opacity-0");
+        m.querySelector("div").classList.add("scale-95");
+        setTimeout(() => m.classList.add("hidden"), 300);
+      }
+
+      async function saveData() {
+        const subjectId = document.getElementById('subjectIdInput').value || "Unknown_Subject";
+        const filename = `facial_${subjectId}_${new Date().getTime()}.webm`;
+        
+        // Show saving state in modal
+        const saveBtn = document.querySelector('#saveModal button[onclick="saveData()"]');
+        const originalText = saveBtn.innerText;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving... <span id="saveProgress">0%</span>';
+        
+        try {
+          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const size = blob.size;
+          const sizeMB = (size / (1024 * 1024)).toFixed(1) + " MB";
+          
+          // 1. Initiate Upload
+          const initResult = await eel.initiate_upload(filename, sizeMB, 'video', true)();
+          if (!initResult.success) throw new Error(initResult.message);
+          
+          const uploadId = initResult.data.upload_id;
+          const CHUNK_SIZE = 1024 * 1024; // 1MB chunks
+          let offset = 0;
+          
+          // 2. Upload Chunks
+          while (offset < size) {
+             const chunk = blob.slice(offset, offset + CHUNK_SIZE);
+             const reader = new FileReader();
+             
+             await new Promise((resolve, reject) => {
+                 reader.onload = async (e) => {
+                     try {
+                         const result = await eel.append_upload_chunk(uploadId, e.target.result)();
+                         if (!result.success) reject(new Error(result.message));
+                         resolve();
+                     } catch (err) { reject(err); }
+                 };
+                 reader.onerror = reject;
+                 reader.readAsDataURL(chunk);
+             });
+             
+             offset += CHUNK_SIZE;
+             const progress = Math.min(100, Math.round((offset / size) * 100));
+             document.getElementById('saveProgress').innerText = progress + "%";
+          }
+          
+          // 3. Finalize
+          const finalResult = await eel.finalize_upload(uploadId)();
+          if (finalResult.success) {
+                closeSaveModal();
+                // Visualization
+                const video = document.getElementById("webcam");
+                video.srcObject = null;
+                video.src = (finalResult.data && finalResult.data.filepath) ? finalResult.data.filepath : `../recordings/${filename}`;
+                video.setAttribute('controls', 'true');
+                video.style.transform = "scaleX(-1)";
+                const off = document.getElementById("camOffState");
+                const on = document.getElementById("camOnState");
+                off.classList.add("hidden");
+                on.classList.remove("hidden");
+                
+                document.getElementById('analyseBtn').classList.remove('hidden');
+                updateStatusUI('ready', 'Session Saved');
+          } else {
+             throw new Error(finalResult.message);
+          }
+          resetUIState();
+        } catch (e) { 
+            console.error(e); 
+            alert("Error saving recording: " + e.message);
+            saveBtn.disabled = false;
+            saveBtn.innerText = originalText;
+        }
+      }
+
+      function discardSession() {
+        if (confirm("Discard recording?")) {
+           closeSaveModal();
+           recordedChunks = [];
+           if (mediaStream) {
+             mediaStream.getTracks().forEach(track => track.stop());
+             mediaStream = null;
+           }
+           resetUIState();
+        }
+      }
+
+      function resetUIState() {
+        isRecording = false;
+        const btn = document.getElementById("sessionBtn");
+        btn.innerHTML = '<i class="fas fa-play mr-2"></i> Start Recording';
+        btn.classList.add("bg-cyan-600");
+        btn.classList.remove("bg-red-600");
+        document.getElementById("recordingTimer").innerText = "00:00:00";
+        if (timerInterval) clearInterval(timerInterval);
+        document.getElementById("recIndicator").classList.add("hidden");
+        cameraOn = (mediaStream !== null);
+      }
+
+      function finalizeAnalysis() {
+          Loader.show("Analyzing Patterns");
+          // Simulation of analysis logic
+          setTimeout(() => {
+              Loader.hide();
+              showToast("Analysis Complete", "success");
+          }, 2500);
+      }
+
+      // --- UI Utilities ---
+      function updateStatusUI(status, label) {
+          const tag = document.getElementById('statusTag');
+          const dot = document.getElementById('statusDot');
+          if (!tag || !dot) return;
+          tag.innerText = label;
+          if (status === 'live') dot.className = "w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]";
+          else if (status === 'vault') dot.className = "w-2 h-2 bg-cyan-400 rounded-full shadow-[0_0_10px_rgba(0,219,255,0.5)]";
+          else dot.className = "w-2 h-2 bg-gray-500 rounded-full";
+      }
+
+      function toggleFullScreen() {
+        const container = document.querySelector(".video-container");
+        if (container) {
+            if (!document.fullscreenElement) container.requestFullscreen();
+            else document.exitFullscreen();
+        }
+      }
+
+      function resetConfigurations() {
+        const modules = ["toggleFace", "toggleEmotion", "toggleEyeMove", "toggleEyeJumps", "toggleMuscleTwitch", "toggleNasal", "toggleCheeks", "toggleJaw", "toggleMesh"];
+        modules.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.checked = (id === "toggleEmotion" || id === "toggleFace");
+        });
+      }
+
+      function openVaultSelection() {
+          VaultComponent.open((item) => {
+              if (item.type !== 'video') { alert("Please select a video file."); return; }
+              
+              Loader.show("Loading Evidence");
+              
+              const video = document.getElementById("webcam");
+              if (mediaStream) { mediaStream.getTracks().forEach(track => track.stop()); mediaStream = null; }
+              video.srcObject = null;
+              video.src = item.filepath;
+              video.setAttribute('controls', 'true');
+              video.style.transform = "none";
+              document.querySelector("h1").innerHTML = item.filename + ' <span class="text-cyan-400 font-normal">| VAULT SCAN</span>';
+              updateStatusUI('vault', 'Vault Analysis');
+              cameraOn = true;
+              document.getElementById("camOffState").classList.add("hidden");
+              document.getElementById("camOnState").classList.remove("hidden");
+              document.getElementById("camOnState").classList.add("flex");
+              
+              // Show Analyse button when loading from vault
+              const analyseBtn = document.getElementById("analyseBtn");
+              if (analyseBtn) analyseBtn.classList.remove("hidden");
+              
+              video.oncanplay = () => {
+                  Loader.hide();
+                  video.play();
+              };
+          });
+      }
+
+      // --- Data Simulation Loop ---
+      setInterval(() => {
+        if (!cameraOn || !radarChart) return;
+        radarChart.data.datasets[0].data = radarChart.data.datasets[0].data.map(val => {
+            const shift = (Math.random() - 0.5) * 5;
+            return Math.max(0, Math.min(100, val + shift));
+        });
+        radarChart.update("none");
+
+        const updateBar = (id, valId) => {
+          const el = document.getElementById(id);
+          const valEl = document.getElementById(valId);
+          if (el && valEl) {
+            const newVal = Math.floor(Math.random() * 80) + 10;
+            el.style.width = newVal + "%";
+            valEl.innerText = newVal + "%";
+          }
+        };
+        updateBar("barLip", "valLip");
+        updateBar("barBrow", "valBrow");
+        updateBar("barPupil", "valPupil");
+        updateBar("barNose", "valNose");
+      }, 800);
+
+      // Initial Load
+      document.addEventListener("DOMContentLoaded", async () => {
+        // Check session
+        const result = await eel.get_current_user()();
+        const user = (result.success && result.data) ? result.data : null;
+        
+        if (!user) {
+          window.location.href = 'login.html';
+          return;
+        }
+        const activeMember = document.querySelector('.active-member-info span.ml-1');
+        const pageTitle = document.querySelector('h1');
+        if (activeMember) activeMember.textContent = `${user.firstName} ${user.lastName} • Unit #${user.username.toUpperCase()}`;
+        // Keep the title as "Facial Analysis Unit" as per user request
+
+
+        populateDevices();
+
+        // Update Theme UI state (icons, buttons, charts)
+        const isLight = body.classList.contains('light-mode');
+        // Update charts theme
+        updateChartsTheme(isLight);
+
+        // Check for file parameter in URL for seamless analysis
+        const urlParams = new URLSearchParams(window.location.search);
+        const autoFile = urlParams.get('file');
+        if (autoFile) {
+            Loader.show("Loading Evidence");
+            const video = document.getElementById("webcam");
+            if (mediaStream) { mediaStream.getTracks().forEach(track => track.stop()); mediaStream = null; }
+            video.srcObject = null;
+            video.src = autoFile;
+            video.setAttribute('controls', 'true');
+            video.style.transform = "none";
+            updateStatusUI('vault', 'Vault Analysis');
+            cameraOn = true;
+            document.getElementById("camOffState").classList.add("hidden");
+            document.getElementById("camOnState").classList.remove("hidden");
+            document.getElementById("camOnState").classList.add("flex");
+            
+            const analyseBtn = document.getElementById("analyseBtn");
+            if (analyseBtn) analyseBtn.classList.remove("hidden");
+            
+            video.oncanplay = () => {
+                Loader.hide();
+                video.play();
+            };
+        }
+      });
+
+      // Logout logic is handled globally by sidebar.js
+    </script>
+  </body>
+</html>

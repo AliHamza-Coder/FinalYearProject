@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deceptron - Profile Management</title>
+    <link rel="stylesheet" href="../styles/output.css">
+    <link rel="stylesheet" href="../vendor/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="../styles/sidebar.css">
+    <script type="text/javascript" src="/eel.js"></script>
+    <style>
+        :root {
+            --primary-blue: #0076D6;
+            --accent-cyan: #00DBFF;
+            --accent-cyan-glow: rgba(0, 219, 255, 0.4);
+            --sidebar-width: 260px;
+            
+            /* Theme Tokens */
+            --bg-main: #05080f;
+            --text-main: #e2e8f0;
+            --text-dim: #94a3b8;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --sidebar-bg: rgba(10, 17, 32, 0.98);
+            --card-bg: rgba(16, 28, 45, 0.4);
+            --border-subtle: rgba(255, 255, 255, 0.05);
+            --neon-blue: #0076D6;
+            --neon-cyan: #00DBFF;
+        }
+
+        body.light-mode {
+            --bg-main: #f8fafc;
+            --text-main: #0f172a;
+            --text-dim: #475569;
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --sidebar-bg: rgba(255, 255, 255, 0.98);
+            --card-bg: rgba(255, 255, 255, 1);
+            --border-subtle: rgba(0, 118, 214, 0.1);
+        }
+
+        /* Light Mode Header Fix */
+        body.light-mode h1, 
+        body.light-mode h2, 
+        body.light-mode h3,
+        body.light-mode h4,
+        body.light-mode .heading-font {
+            color: #0f172a !important;
+        }
+
+        body.light-mode .text-white {
+            color: #0f172a !important;
+        }
+
+        body.light-mode .verified-badge {
+            background: rgba(16, 185, 129, 0.05);
+            border-color: rgba(16, 185, 129, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        body:not(.light-mode) {
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(210,100%,15%,0.15) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(180,100%,10%,0.1) 0, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(210,100%,15%,0.15) 0, transparent 50%),
+                radial-gradient(at 50% 100%, hsla(340,100%,10%,0.05) 0, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .heading-font { font-family: 'Orbitron', sans-serif; }
+
+        .logo-section img { max-width: 100%; height: auto; filter: drop-shadow(0 0 10px rgba(0, 219, 255, 0.5)); }
+
+        /* Main Content */
+        .main-content {
+            padding: 2.5rem;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            display: flex; align-items: center; gap: 2.5rem;
+            padding: 2rem; margin-bottom: 3rem;
+            background: var(--glass-bg);
+            border-radius: 2.5rem;
+            border: 1px solid var(--border-subtle);
+            backdrop-filter: blur(20px);
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            width: 170px; height: 170px;
+            border-radius: 50%;
+            padding: 8px;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue));
+            box-shadow: 0 0 40px rgba(0, 219, 255, 0.25);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .avatar-inner {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            background: #05080f;
+            position: relative;
+            overflow: hidden;
+            border: 4px solid #05080f;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .avatar-inner img { 
+            width: 100%; height: 100%; 
+            object-fit: cover; 
+            transition: all 0.5s ease;
+        }
+
+        /* Hover Overlay */
+        .avatar-wrapper:hover .avatar-inner img { transform: scale(1.1); filter: blur(3px) brightness(0.6); }
+        
+        .avatar-edit-overlay {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(0, 0, 0, 0.4);
+            opacity: 0; transition: all 0.3s ease;
+            cursor: pointer; z-index: 5;
+        }
+
+        .avatar-wrapper:hover .avatar-edit-overlay { opacity: 1; }
+        
+        .avatar-edit-overlay i { font-size: 1.5rem; color: #fff; margin-bottom: 0.5rem; transform: translateY(10px); transition: 0.3s; }
+        .avatar-edit-overlay span { font-size: 0.6rem; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 1px; transform: translateY(10px); transition: 0.3s 0.05s; }
+        .avatar-wrapper:hover .avatar-edit-overlay i, 
+        .avatar-wrapper:hover .avatar-edit-overlay span { transform: translateY(0); }
+
+        /* Delete Button - Sleek Corner Placement */
+        .delete-avatar-btn {
+            position: absolute; top: 5px; right: 5px;
+            width: 34px; height: 34px;
+            background: #ff4757; color: #fff;
+            border-radius: 50%; display: none;
+            align-items: center; justify-content: center;
+            font-size: 0.8rem; border: 3px solid #05080f;
+            cursor: pointer; z-index: 15; transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+        }
+        .delete-avatar-btn:hover { background: #ff6b81; transform: scale(1.1) rotate(90deg); }
+
+        /* Pending Confirmation Overlay */
+        .avatar-confirm-overlay {
+            position: absolute; inset: 0;
+            background: rgba(0, 219, 255, 0.15);
+            backdrop-filter: blur(8px);
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            gap: 1rem; z-index: 20; border-radius: 50%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .avatar-wrapper.pending-save .avatar-confirm-overlay { display: flex; }
+        
+        .confirm-actions { display: flex; gap: 0.75rem; }
+        
+        .btn-action {
+            width: 44px; height: 44px;
+            border-radius: 50%; border: none;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; cursor: pointer; transition: all 0.3s ease;
+        }
+
+        .btn-confirm { background: var(--neon-cyan); color: #05080f; box-shadow: 0 0 20px rgba(0, 219, 255, 0.4); }
+        .btn-confirm:hover { transform: scale(1.1); background: #fff; }
+        
+        .btn-cancel { background: rgba(255, 255, 255, 0.1); color: #fff; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .btn-cancel:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.1); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .verified-badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.4rem 0.8rem;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 2rem;
+            font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+        }
+
+        /* Modal Avatar Styles */
+        .modal-avatar-section {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 1rem; border-radius: 2rem;
+        }
+
+        .modal-avatar-wrapper {
+            position: relative;
+            width: 140px; height: 140px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-avatar-preview {
+            width: 140px; height: 140px;
+            border-radius: 50%;
+            border: 4px solid var(--neon-cyan);
+            overflow: hidden;
+            background: #05080f;
+            box-shadow: 0 0 30px rgba(0, 219, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .modal-avatar-wrapper:hover .modal-avatar-preview {
+            transform: scale(1.02);
+            box-shadow: 0 0 40px rgba(0, 219, 255, 0.4);
+        }
+
+        .modal-avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+        .modal-pencil-icon {
+            position: absolute; bottom: 5px; right: 5px;
+            width: 38px; height: 38px;
+            background: var(--neon-cyan);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #05080f; border: 4px solid #05080f;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .modal-avatar-wrapper:hover .modal-pencil-icon {
+            transform: scale(1.1) rotate(15deg);
+        }
+
+        .modal-remove-link {
+            margin-top: 1rem;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-remove-link:hover { color: #ef4444; text-decoration: underline; }
+
+        @media (max-width: 768px) {
+            .modal-avatar-wrapper {
+                width: 110px; height: 110px;
+            }
+            .modal-avatar-preview {
+                width: 110px; height: 110px;
+            }
+            .modal-pencil-icon {
+                width: 32px; height: 32px;
+                border: 3px solid #05080f;
+            }
+        }
+
+        /* Info Cards */
+        .info-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            display: flex; align-items: center; gap: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .info-card:hover { transform: translateY(-5px); border-color: var(--neon-cyan); }
+
+        .icon-box {
+            width: 50px; height: 50px;
+            background: rgba(0, 219, 255, 0.1);
+            border: 1px solid rgba(0, 219, 255, 0.2);
+            border-radius: 1rem;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--neon-cyan); font-size: 1.25rem;
+        }
+
+        /* Password Section */
+        .password-section {
+            margin-top: 3rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 2rem;
+            padding: 2rem;
+        }
+
+        .input-group { margin-bottom: 1.5rem; }
+        .input-group label {
+            display: block; margin-bottom: 0.5rem;
+            font-size: 0.7rem; font-weight: 700; color: var(--text-dim);
+            text-transform: uppercase; letter-spacing: 0.1em;
+        }
+
+        .cyber-input {
+            width: 100%; padding: 0.85rem 1.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            border-radius: 0.75rem;
+            color: var(--text-main); transition: all 0.3s ease;
+        }
+
+        body.light-mode .cyber-input {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #1e293b;
+        }
+
+        .cyber-input:focus {
+            outline: none; border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 219, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        body.light-mode .cyber-input:focus {
+            background: #fff;
+        }
+
+        .update-btn {
+            background: var(--neon-cyan);
+            color: #05080f;
+            padding: 1rem 2.5rem;
+            border-radius: 1rem;
+            font-weight: 800; text-transform: uppercase;
+            border: none; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 219, 255, 0.3);
+        }
+
+        .update-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 219, 255, 0.5);
+            background: #fff;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px); z-index: 1000;
+            display: none; align-items: center; justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--sidebar-bg);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 2.5rem;
+            width: 90%; max-width: 850px;
+            padding: 2rem;
+            box-shadow: 0 0 60px rgba(0, 219, 255, 0.3);
+            color: var(--text-main);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                padding: 1.5rem;
+                border-radius: 1.5rem;
+            }
+        }
+
+        body.light-mode .modal-content {
+            background: #fff;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            color: #1e293b;
+        }
+        
+        .modal-header h2 { color: var(--text-main); }
+        .modal-header p { color: var(--text-dim); }
+        body.light-mode .modal-header h2 { color: #1e293b; }
+
+        /* Theme Toggle */
+        .theme-btn {
+            width: 45px; height: 45px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-main); cursor: pointer; transition: all 0.3s ease;
+        }
+
+        .theme-btn:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+
+        .collapse-btn {
+            position: absolute; top: 1.25rem; right: 0.5rem;
+            width: 26px; height: 26px;
+            background: var(--neon-cyan);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 100; box-shadow: 0 0 15px rgba(0, 219, 255, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Component Container -->
+    <script src="../js/components/sidebar.js"></script>
+    <script>
+        // Anti-Flash Theme Optimization
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+            if (savedTheme === 'light' || (!savedTheme && prefersLight)) {
+                document.body.classList.add('light-mode');
+            }
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                document.body.classList.add('sidebar-collapsed');
+            }
+        })();
+        initSidebar();
+    </script>
+
+    <main class="main-content">
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <h1 class="text-3xl font-black heading-font text-white">Profile</h1>
+                <p class="text-sm text-dim">Manage your account information</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="update-btn flex items-center gap-2" onclick="openModal()" style="padding: 0.7rem 1.5rem; font-size: 0.8rem;">
+                    <i class="fas fa-pencil-alt"></i> Edit Profile
+                </button>
+                <button class="theme-btn" onclick="toggleTheme()" id="theme-toggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="avatar-wrapper" id="avatar-container">
+                <div class="avatar-inner">
+                    <img src="" alt="Avatar" id="display-avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=0a1120&color=00dbff'">
+                </div>
+            </div>
+            <div class="flex-1">
+                <div class="flex items-center gap-4 mb-2">
+                    <h2 class="text-4xl font-black heading-font text-white" id="display-name">...</h2>
+                    <span class="verified-badge"><i class="fas fa-check-circle"></i> Verified</span>
+                </div>
+                <p class="text-cyan-400 text-sm font-bold tracking-[0.2em] uppercase" id="display-title">...</p>
+            </div>
+        </section>
+
+        <!-- Info Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="info-card">
+                <div class="icon-box"><i class="fas fa-envelope"></i></div>
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest font-bold text-dim">Email Address</label>
+                    <p class="text-lg font-bold" id="display-email">-</p>
+                </div>
+            </div>
+            <div class="info-card">
+                <div class="icon-box"><i class="fas fa-user-tag"></i></div>
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest font-bold text-dim">Full Name</label>
+                    <p class="text-lg font-bold" id="display-fullname">-</p>
+                </div>
+            </div>
+            <div class="info-card">
+                <div class="icon-box"><i class="fas fa-clock"></i></div>
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest font-bold text-dim">Last Login</label>
+                    <p class="text-lg font-bold" id="display-last-login">Just now</p>
+                </div>
+            </div>
+            <div class="info-card">
+                <div class="icon-box"><i class="fas fa-calendar-alt"></i></div>
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest font-bold text-dim">Member Since</label>
+                    <p class="text-lg font-bold heading-font text-cyan-400" id="display-member-since">-</p>
+                </div>
+            </div>
+            </div>
+        </main>
+    
+        <!-- Edit Profile Modal -->
+        <div class="modal-overlay" id="edit-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="text-2xl font-black heading-font mb-2">Edit Account</h2>
+                    <p class="text-xs text-dim uppercase tracking-widest">Update your profile and security</p>
+                </div>
+                
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <!-- Avatar Management Column -->
+                        <div class="md:col-span-1 border-r border-white/5 pr-4">
+                            <div class="modal-avatar-section">
+                                <div class="modal-avatar-wrapper" onclick="document.getElementById('modal-avatar-upload').click()">
+                                    <div class="modal-avatar-preview">
+                                        <img src="" id="modal-avatar-display" onerror="this.src='https://ui-avatars.com/api/?name=User&background=0a1120&color=00dbff'">
+                                    </div>
+                                    <div class="modal-pencil-icon">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </div>
+                                </div>
+                                <div class="modal-remove-link" onclick="modalRemoveAvatar()">
+                                    <i class="fas fa-trash-alt mr-1"></i> Remove Photo
+                                </div>
+                                <input type="file" id="modal-avatar-upload" class="hidden" accept="image/*" onchange="modalPreviewAvatar(event)">
+                            </div>
+                        </div>
+
+                        <!-- Data Column -->
+                        <div class="md:col-span-2 space-y-6">
+                            <div class="grid grid-cols-1 gap-6">
+                                <div class="space-y-4">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <i class="fas fa-id-card text-cyan-400"></i>
+                                        <h4 class="text-xs font-black uppercase tracking-wider">General Information</h4>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>Full Name</label>
+                                        <input type="text" class="cyber-input" id="edit-name" placeholder="Full Name">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>Designation</label>
+                                        <input type="text" class="cyber-input" id="edit-title" placeholder="Designation">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3 mb-2">
+                                <i class="fas fa-lock text-cyan-400"></i>
+                                <h4 class="text-xs font-black uppercase tracking-wider">Account Security</h4>
+                            </div>
+                            <div class="input-group">
+                                <label>Current Password</label>
+                                <input type="password" class="cyber-input" id="edit-current-pwd" placeholder="••••••••">
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3 mb-2 invisible">
+                                <h4 class="text-xs font-black uppercase tracking-wider">Hidden</h4>
+                            </div>
+                            <div class="input-group">
+                                <label>New Password</label>
+                                <input type="password" class="cyber-input" id="edit-new-pwd" placeholder="••••••••">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Email Address (Primary)</label>
+                        <input type="text" class="cyber-input opacity-50" id="edit-email" disabled>
+                    </div>
+
+                    <div class="flex gap-4 pt-4">
+                        <button class="update-btn flex-1" style="background: rgba(128,128,128,0.1); color: var(--text-main); border: 1px solid var(--border-subtle); box-shadow: none;" onclick="closeModal()">Cancel</button>
+                        <button class="update-btn flex-1" onclick="saveProfile()">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <script>
+        const body = document.body;
+
+        function toggleSidebar() {
+            body.classList.toggle('sidebar-collapsed');
+            localStorage.setItem('sidebarCollapsed', body.classList.contains('sidebar-collapsed'));
+        }
+
+        const themeToggle = document.getElementById("theme-toggle");
+        const themeIcon = themeToggle ? themeToggle.querySelector("i") : null;
+
+        function toggleTheme() {
+            const isLight = body.classList.toggle('light-mode');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            updateThemeUI(isLight);
+        }
+
+        function updateThemeUI(isLight) {
+            if (!themeIcon) return;
+            themeIcon.className = isLight ? 'fas fa-sun' : 'fas fa-moon';
+            if (themeToggle) {
+                themeToggle.classList.toggle("bg-gray-200", isLight);
+                themeToggle.classList.toggle("text-gray-900", isLight);
+                themeToggle.classList.toggle("border-gray-300", isLight);
+            }
+        }
+
+        function openModal() { document.getElementById('edit-modal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('edit-modal').style.display = 'none'; }
+
+        async function saveProfile() {
+            console.log("Save Profile clicked");
+            try {
+                const name = document.getElementById('edit-name').value;
+                const title = document.getElementById('edit-title').value;
+                const currentPwd = document.getElementById('edit-current-pwd').value;
+                const newPwd = document.getElementById('edit-new-pwd').value;
+
+                console.log("Profile data:", { name, title });
+
+                // Handle Avatar Update
+                if (pendingAvatarBase64 !== null) {
+                    console.log("Updating avatar...");
+                    const avatarResult = await eel.update_avatar(pendingAvatarBase64)();
+                    console.log("Avatar result:", avatarResult);
+                    if (!avatarResult.success) {
+                        alert("Avatar update failed: " + avatarResult.message);
+                        return;
+                    }
+                    pendingAvatarBase64 = null;
+                }
+
+                // Update Profile Info
+                console.log("Updating profile...");
+                const result = await eel.update_profile(name, title)();
+                console.log("Profile result:", result);
+                if (result.success) {
+                    updateProfileUI(result.user);
+                    alert("Profile updated successfully!");
+                } else {
+                    alert("Profile update failed: " + (result.message || "Unknown error"));
+                    return;
+                }
+
+                // Update Password if fields are filled
+                if (currentPwd && newPwd) {
+                    console.log("Updating password...");
+                    const pwdResult = await eel.update_password(currentPwd, newPwd)();
+                    console.log("Password result:", pwdResult);
+                    if (pwdResult.success) {
+                        alert("Password updated successfully!");
+                        document.getElementById('edit-current-pwd').value = '';
+                        document.getElementById('edit-new-pwd').value = '';
+                    } else {
+                        alert("Password update failed: " + pwdResult.message);
+                    }
+                }
+                
+                closeModal();
+            } catch (error) {
+                console.error("Save profile error:", error);
+                alert("An error occurred while saving: " + error.message);
+            }
+        }
+
+        function updateProfileUI(user) {
+            if (!user) return;
+            const name = user.fullname || user.username || 'User';
+            const title = user.title || 'Senior Analyst • Deceptron Unit';
+            const email = user.email || 'N/A';
+            const avatar = user.avatar || '';
+            
+            document.getElementById('display-name').innerText = name;
+            document.getElementById('display-fullname').innerText = name;
+            document.getElementById('display-title').innerText = title;
+            document.getElementById('display-email').innerText = email;
+
+            // Updated Realtime Data
+            const lastLogin = user.last_login ? new Date(user.last_login).toLocaleString() : 'Just now';
+            const memberSince = user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A';
+            
+            document.getElementById('display-last-login').innerText = lastLogin;
+            document.getElementById('display-member-since').innerText = memberSince;
+
+            const avatarImg = document.getElementById('display-avatar');
+            const modalAvatarImg = document.getElementById('modal-avatar-display');
+
+            const avatarUrl = avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0a1120&color=00dbff`;
+            avatarImg.src = avatarUrl;
+            modalAvatarImg.src = avatarUrl;
+            
+            // Update input fields
+            document.getElementById('edit-name').value = name;
+            document.getElementById('edit-title').value = title;
+            document.getElementById('edit-email').value = email;
+            
+            window.currentUserAvatar = avatar;
+        }
+
+        let pendingAvatarBase64 = null;
+
+        function modalPreviewAvatar(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    pendingAvatarBase64 = event.target.result;
+                    document.getElementById('modal-avatar-display').src = pendingAvatarBase64;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function modalRemoveAvatar() {
+            if (confirm("Remove profile photo?")) {
+                pendingAvatarBase64 = ""; // Empty string tells backend to clear avatar
+                document.getElementById('modal-avatar-display').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(document.getElementById('edit-name').value || 'User')}&background=0a1120&color=00dbff`;
+            }
+        }
+
+        // Logout logic is handled globally by sidebar.js
+
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Update Theme UI state (icons, buttons)
+            updateThemeUI(body.classList.contains('light-mode'));
+
+            // Fetch real user data immediately and update UI
+            try {
+                const result = await eel.get_current_user()();
+                if (result.success && result.data) {
+                    updateProfileUI(result.data);
+                } else {
+                    // Redirect if no session
+                    window.location.href = 'login.html';
+                }
+            } catch (err) {
+                console.error("Failed to fetch user data:", err);
+            }
+        });
+    </script>
+</body>
+</html>
+```

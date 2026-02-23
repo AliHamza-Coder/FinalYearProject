@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deceptron - Dashboard Hub</title>
+    <link rel="stylesheet" href="../styles/output.css">
+    <script src="../scripts/chart.min.js"></script>
+    <link rel="stylesheet" href="../vendor/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="../styles/sidebar.css">
+    <script type="text/javascript" src="/eel.js"></script>
+    <style>
+        :root {
+            --primary-blue: #0076D6;
+            --accent-cyan: #00DBFF;
+            --sidebar-width: 260px;
+            
+            /* Theme Tokens */
+            --bg-main: #05080f;
+            --text-main: #e2e8f0;
+            --text-dim: #94a3b8;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --sidebar-bg: rgba(10, 17, 32, 0.98);
+            --card-bg: rgba(16, 28, 45, 0.4);
+            --border-subtle: rgba(255, 255, 255, 0.05);
+        }
+
+        body.light-mode {
+            --bg-main: #f0f9ff;
+            --text-main: #1e293b;
+            --text-dim: #64748b;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --sidebar-bg: rgba(255, 255, 255, 0.9);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --border-subtle: rgba(0, 219, 255, 0.15);
+        }
+
+        /* Light Mode Utility Overrides */
+        body.light-mode h1, 
+        body.light-mode h2, 
+        body.light-mode h3 {
+            color: #1e293b !important;
+        }
+
+        body.light-mode .text-white,
+        body.light-mode .text-gray-100,
+        body.light-mode .text-gray-200,
+        body.light-mode .text-gray-300 {
+            color: #0f172a !important;
+        }
+
+        body.light-mode .text-gray-400,
+        body.light-mode .text-gray-500 {
+            color: #334155 !important;
+        }
+
+        body.light-mode .bg-white\/5 {
+            background-color: rgba(0, 118, 214, 0.05) !important;
+        }
+
+        body.light-mode .border-white\/10,
+        body.light-mode .border-white\/5 {
+            border-color: rgba(0, 118, 214, 0.1) !important;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            overflow: hidden;
+            width: 100vw;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        body:not(.light-mode) {
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(210,100%,15%,0.15) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(180,100%,10%,0.1) 0, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(210,100%,15%,0.15) 0, transparent 50%),
+                radial-gradient(at 50% 100%, hsla(340,100%,10%,0.05) 0, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        body.light-mode {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(224, 242, 254, 0.8) 0, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(207, 250, 254, 0.8) 0, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(240, 249, 255, 1) 0, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .heading-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        button, a, select, .nav-item, .cursor-pointer, .card, .analysis-row {
+            cursor: pointer !important;
+        }
+
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid var(--border-subtle);
+            border-radius: 2rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.light-mode .glass {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(0, 219, 255, 0.4);
+            box-shadow: 0 10px 40px rgba(0, 118, 214, 0.08);
+            border-radius: 2.5rem;
+        }
+
+        body.light-mode .glass:hover {
+            background: rgba(255, 255, 255, 0.98);
+            border-color: rgba(0, 219, 255, 0.8);
+            box-shadow: 0 0 40px rgba(0, 219, 255, 0.25), 0 15px 45px rgba(0, 118, 214, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        .collapse-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid var(--border-subtle);
+            border-radius: 2rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        body.light-mode .card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(0, 219, 255, 0.4);
+            box-shadow: 0 10px 40px rgba(0, 118, 214, 0.08);
+            border-radius: 2.5rem;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            background: rgba(16, 28, 45, 0.8);
+            border-color: rgba(0, 219, 255, 0.3);
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.5);
+        }
+
+        body.light-mode .card:hover {
+            background: rgba(255, 255, 255, 0.98);
+            border-color: rgba(0, 219, 255, 0.8);
+            box-shadow: 0 0 40px rgba(0, 219, 255, 0.25), 0 15px 45px rgba(0, 118, 214, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .btn-action {
+            color: var(--accent-cyan);
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        .btn-action:hover {
+            text-shadow: 0 0 10px rgba(0, 219, 255, 0.5);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 219, 255, 0.05), transparent);
+            transition: 0.5s;
+        }
+
+        .card:hover::before {
+            left: 100%;
+        }
+
+        @keyframes scan {
+            0% {
+                transform: translateY(-100%);
+            }
+
+            100% {
+                transform: translateY(1000%);
+            }
+        }
+
+        .scanning-line {
+            display: none;
+        }
+
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 0 0 5px #10b981;
+            }
+
+            50% {
+                box-shadow: 0 0 20px #10b981;
+            }
+
+            100% {
+                box-shadow: 0 0 5px #10b981;
+            }
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+            animation: pulse-glow 2s infinite;
+        }
+
+        .analysis-row {
+            border-bottom: 1px solid var(--border-subtle);
+            transition: background 0.2s ease;
+        }
+
+        .analysis-row:last-child {
+            border-bottom: none;
+        }
+
+        .analysis-row:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        body.light-mode .analysis-row:hover {
+            background: rgba(0, 118, 214, 0.03);
+        }
+
+        .progress-bar-bg {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        body.light-mode .progress-bar-bg {
+            background: rgba(0, 118, 214, 0.06);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-subtle);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        body.light-mode ::-webkit-scrollbar-thumb {
+            background: rgba(0, 118, 214, 0.15);
+        }
+
+        body.light-mode ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 118, 214, 0.25);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+
+        /* Light Mode Utility Overrides */
+        body.light-mode .bg-white\/5 {
+            background-color: rgba(0, 118, 214, 0.05) !important;
+        }
+
+        body.light-mode .border-white\/10,
+        body.light-mode .border-white\/5 {
+            border-color: rgba(0, 118, 214, 0.1) !important;
+        }
+
+        body.light-mode .text-gray-400 {
+            color: #475569 !important;
+        }
+
+        body.light-mode .text-gray-500 {
+            color: #64748b !important;
+        }
+
+        body.light-mode .text-gray-600 {
+            color: #94a3b8 !important;
+        }
+
+        body.light-mode .bg-slate-800 {
+            background-color: rgba(0, 118, 214, 0.1) !important;
+        }
+
+        body.light-mode h1, 
+        body.light-mode h2, 
+        body.light-mode h3 {
+            color: #1e293b !important;
+        }
+
+        body.light-mode .text-white,
+        body.light-mode .text-gray-100,
+        body.light-mode .text-gray-200,
+        body.light-mode .text-gray-300 {
+            color: #0f172a !important;
+        }
+
+        body.light-mode .text-gray-400,
+        body.light-mode .text-gray-500 {
+            color: #334155 !important;
+        }
+
+
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar Component Container -->
+    <script src="../js/components/sidebar.js"></script>
+    <script>
+        // Anti-Flash Theme Optimization
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+            if (savedTheme === 'light' || (!savedTheme && prefersLight)) {
+                document.body.classList.add('light-mode');
+            }
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                document.body.classList.add('sidebar-collapsed');
+            }
+        })();
+        initSidebar();
+    </script>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="p-8 pb-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold heading-font">Dashboard Hub</h1>
+                <div class="flex items-center mt-2 text-xs text-cyan-400 font-medium tracking-wide">
+                    <span class="status-dot"></span>
+                    System Status: <span class="ml-1 opacity-80">Ready for Analysis</span>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <button id="theme-toggle" class="p-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-cyan-400 hover:bg-white/10 transition-all cursor-pointer" title="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <div class="flex items-center space-x-3 p-1.5 bg-white/5 rounded-2xl border border-white/10 cursor-pointer hover:bg-white/10 transition-all"
+                    onclick="window.location.href='profile.html'">
+                    <div id="profile-initials"
+                        class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-xs font-bold text-white shadow-lg shadow-cyan-500/20 overflow-hidden">
+                        ...
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <script>
+            // Real User Data Loading for Dashboard
+            async function loadUserData() {
+                try {
+                    const user = await eel.get_current_user()();
+                    if (user) {
+                        const name = user.fullname || user.username || 'Agent';
+                        const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                        const initialsContainer = document.getElementById('profile-initials');
+                        
+                        if (user.avatar) {
+                            initialsContainer.innerHTML = `<img src="${user.avatar}" class="w-full h-full object-cover">`;
+                            initialsContainer.classList.remove('bg-gradient-to-br', 'from-blue-500', 'to-cyan-400');
+                        } else {
+                            initialsContainer.innerText = initials;
+                        }
+                    } else {
+                        window.location.href = 'login.html';
+                    }
+                } catch (err) {
+                    console.error("Data load failed:", err);
+                }
+            }
+            document.addEventListener('DOMContentLoaded', loadUserData);
+        </script>
+
+        <section class="p-8 pt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Action Cards -->
+            <div class="card p-8 group cursor-pointer">
+                <div class="scanning-line"></div>
+                <div
+                    class="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 mb-6 group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
+                    <i class="fas fa-video-camera text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Live Check</h3>
+                <p class="text-sm text-gray-400 mb-6 leading-relaxed">Real-time AI behavioral analysis and stress
+                    monitoring.</p>
+                <a href="live-session.html" class="btn-action cursor-pointer">
+                    Launch Session <i class="fas fa-arrow-right text-xs"></i>
+                </a>
+            </div>
+
+            <div class="card p-8 group cursor-pointer">
+                <div class="scanning-line"></div>
+                <div
+                    class="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500 mb-6 group-hover:bg-purple-500 group-hover:text-white transition-all duration-300">
+                    <i class="fas fa-cloud-arrow-up text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Batch Media</h3>
+                <p class="text-sm text-gray-400 mb-6 leading-relaxed">Process recorded evidence and pre-recorded video
+                    files.</p>
+                <a href="uploads.html" class="btn-action">
+                    Scan Files <i class="fas fa-arrow-right text-xs"></i>
+                </a>
+            </div>
+
+            <div class="card p-8 group cursor-pointer">
+                <div class="scanning-line"></div>
+                <div
+                    class="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-6 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
+                    <i class="fas fa-file-shield text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Case Reports</h3>
+                <p class="text-sm text-gray-400 mb-6 leading-relaxed">View all reports and saved data summaries.</p>
+                <a href="reports.html" class="btn-action">
+                    View Archive <i class="fas fa-arrow-right text-xs"></i>
+                </a>
+            </div>
+        </section>
+
+        <section class="p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Recent Analysis Table -->
+            <div class="lg:col-span-2 card p-8 h-fit">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-xl font-bold">Recent Analysis</h3>
+                    <a href="reports.html"
+                        class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors uppercase tracking-widest font-bold">History</a>
+                </div>
+                <div class="space-y-2">
+                    <!-- Table Header -->
+                    <div
+                        class="grid grid-cols-12 gap-4 px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                        <div class="col-span-5">Subject</div>
+                        <div class="col-span-2">Time</div>
+                        <div class="col-span-4 text-center">Lying Risk</div>
+                        <div class="col-span-1"></div>
+                    </div>
+
+                    <!-- Rows -->
+                    <div class="analysis-row grid grid-cols-12 gap-4 items-center px-4 py-4 rounded-xl cursor-pointer">
+                        <div class="col-span-5 flex items-center space-x-3">
+                            <div
+                                class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs border border-white/5">
+                                <i class="fas fa-user-secret text-gray-500"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold">John Doe</div>
+                                <div class="text-[10px] text-gray-500">Ref: #4092</div>
+                            </div>
+                        </div>
+                        <div class="col-span-2 text-xs text-gray-400">Today, 14:30</div>
+                        <div class="col-span-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-1 progress-bar-bg">
+                                    <div class="progress-bar-fill bg-rose-500" style="width: 78%"></div>
+                                </div>
+                                <span class="text-xs font-bold text-rose-400">78%</span>
+                            </div>
+                        </div>
+                        <div class="col-span-1 text-right">
+                            <button class="text-gray-500 hover:text-cyan-400 cursor-pointer"
+                                onclick="window.location.href='report-detail.html'"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="analysis-row grid grid-cols-12 gap-4 items-center px-4 py-3 rounded-xl">
+                        <div class="col-span-5 flex items-center space-x-3">
+                            <div
+                                class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs border border-white/5">
+                                <i class="fas fa-user text-gray-500"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold">Jane Smith</div>
+                                <div class="text-[10px] text-gray-500">Ref: #4091</div>
+                            </div>
+                        </div>
+                        <div class="col-span-2 text-xs text-gray-400">Today, 11:15</div>
+                        <div class="col-span-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-1 progress-bar-bg">
+                                    <div class="progress-bar-fill bg-emerald-500" style="width: 12%"></div>
+                                </div>
+                                <span class="text-xs font-bold text-emerald-400">12%</span>
+                            </div>
+                        </div>
+                        <div class="col-span-1 text-right">
+                            <button class="text-gray-500 hover:text-cyan-400 cursor-pointer"
+                                onclick="window.location.href='report-detail.html'"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="analysis-row grid grid-cols-12 gap-4 items-center px-4 py-3 rounded-xl">
+                        <div class="col-span-5 flex items-center space-x-3">
+                            <div
+                                class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs border border-white/5">
+                                <i class="fas fa-mask text-gray-500"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold">Unknown</div>
+                                <div class="text-[10px] text-gray-500">Ref: #4090</div>
+                            </div>
+                        </div>
+                        <div class="col-span-2 text-xs text-gray-400">Oct 23, 16:50</div>
+                        <div class="col-span-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-1 progress-bar-bg">
+                                    <div class="progress-bar-fill bg-amber-500" style="width: 45%"></div>
+                                </div>
+                                <span class="text-xs font-bold text-amber-400">45%</span>
+                            </div>
+                        </div>
+                        <div class="col-span-1 text-right">
+                            <button class="text-gray-500 hover:text-cyan-400 cursor-pointer"
+                                onclick="window.location.href='report-detail.html'"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trend Analysis Chart -->
+            <div class="card p-8">
+                <h3 class="text-xl font-bold mb-8">Trend Analysis</h3>
+                <div class="chart-container flex items-center justify-center">
+                    <canvas id="trendChart"></canvas>
+                    <div class="absolute text-center">
+                        <span class="block text-3xl font-bold heading-font">124</span>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Cases</span>
+                    </div>
+                </div>
+
+                <div class="mt-8 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center px-3 py-1 bg-white/5 rounded-full">
+                            <span class="w-2 h-2 rounded-full bg-rose-500 mr-2"></span>
+                            <span class="text-xs text-gray-400">High Lying Risk</span>
+                        </div>
+                        <span class="text-xs font-bold text-white">35%</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center px-3 py-1 bg-white/5 rounded-full">
+                            <span class="w-2 h-2 rounded-full bg-amber-500 mr-2"></span>
+                            <span class="text-xs text-gray-400">Not Sure</span>
+                        </div>
+                        <span class="text-xs font-bold text-white">25%</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center px-3 py-1 bg-white/5 rounded-full">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2"></span>
+                            <span class="text-xs text-gray-400">Trustworthy</span>
+                        </div>
+                        <span class="text-xs font-bold text-white">40%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const ctx = document.getElementById('trendChart').getContext('2d');
+        const trendChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['High Lying Risk', 'Not Sure', 'Trustworthy'],
+                datasets: [{
+                    data: [35, 25, 40],
+                    backgroundColor: [
+                        '#f43f5e', // rose-500
+                        '#f59e0b', // amber-500
+                        '#10b981'  // emerald-500
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 10,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                cutout: '80%',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: 'rgba(10, 17, 32, 0.9)',
+                        titleFont: { family: 'Orbitron' },
+                        bodyFont: { family: 'Inter' },
+                        padding: 12,
+                        cornerRadius: 12,
+                        displayColors: false
+                    }
+                },
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Simple Nav Toggle (for simulation)
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                navItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+
+        const body = document.body;
+
+        function toggleSidebar() {
+            body.classList.toggle('sidebar-collapsed');
+            localStorage.setItem('sidebarCollapsed', body.classList.contains('sidebar-collapsed'));
+        }
+
+        // Theme Toggle Logic
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = themeToggle.querySelector('i');
+
+        function toggleTheme() {
+            const isLight = body.classList.toggle('light-mode');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            updateThemeUI(isLight);
+        }
+
+        function updateThemeUI(isLight) {
+            themeIcon.className = isLight ? 'fas fa-sun' : 'fas fa-moon';
+            themeToggle.classList.toggle('bg-gray-200', isLight);
+            themeToggle.classList.toggle('text-gray-900', isLight);
+            themeToggle.classList.toggle('border-gray-300', isLight);
+        }
+
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check session
+            try {
+                const result = await eel.get_current_user()();
+                const user = (result.success && result.data) ? result.data : null;
+                
+                if (!user) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Update Header Name/Initials
+                const userInitials = document.querySelector('.w-8.h-8.rounded-xl');
+                if (userInitials) {
+                    const initials = (user.firstName[0] + user.lastName[0]).toUpperCase();
+                    userInitials.textContent = initials;
+                }
+            } catch (err) {
+                console.error("Auth check failed:", err);
+                // Optionally redirect to login or show an error message if the API call itself fails
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Update Theme UI state (icons, buttons)
+            updateThemeUI(body.classList.contains('light-mode'));
+        });
+
+        // Logout logic is now handled globally by sidebar.js
+    </script>
+</body>
+</html>
