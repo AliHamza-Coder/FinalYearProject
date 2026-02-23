@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deceptron - Report Detail #4092</title>
+    <link rel="stylesheet" href="../styles/output.css">
+    <script src="../scripts/chart.min.js"></script>
+    <link rel="stylesheet" href="../vendor/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="../styles/sidebar.css">
+    <style>
+        :root {
+            --primary-blue: #0076D6;
+            --accent-cyan: #00DBFF;
+            --bg-dark: #070B14;
+            --sidebar-width: 260px;
+        }
+
+        :root {
+            --primary-blue: #0076D6;
+            --accent-cyan: #00DBFF;
+            --bg-dark: #070B14;
+            --sidebar-width: 260px;
+
+            /* Theme Tokens */
+            --bg-main: #05080f;
+            --text-main: #e2e8f0;
+            --text-dim: #94a3b8;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --sidebar-bg: rgba(10, 17, 32, 0.98);
+            --card-bg: rgba(16, 28, 45, 0.4);
+            --border-subtle: rgba(255, 255, 255, 0.05);
+        }
+
+        body.light-mode {
+            --bg-main: #f0f9ff;
+            --text-main: #1e293b;
+            --text-dim: #64748b;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --sidebar-bg: rgba(255, 255, 255, 0.9);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --border-subtle: rgba(0, 219, 255, 0.15);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            overflow: hidden;
+            width: 100vw;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        body:not(.light-mode) {
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(210,100%,15%,0.15) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(180,100%,10%,0.1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(210,100%,15%,0.15) 0, transparent 50%),
+                radial-gradient(at 50% 100%, hsla(340,100%,10%,0.05) 0, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        body.light-mode {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(224, 242, 254, 0.8) 0, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(207, 250, 254, 0.8) 0, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(240, 249, 255, 1) 0, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .heading-font { font-family: 'Orbitron', sans-serif; }
+
+        .glass {
+            background: rgba(16, 28, 45, 0.6);
+            backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass:hover {
+            background: rgba(16, 28, 45, 0.8);
+            border-color: rgba(0, 219, 255, 0.2);
+        }
+
+        body.light-mode .glass {
+            background: rgba(255, 255, 255, 0.98) !important;
+            border: 2px solid rgba(0, 219, 255, 0.5) !important;
+            box-shadow: 0 10px 40px rgba(0, 118, 214, 0.1) !important;
+            border-radius: 2.5rem;
+        }
+
+        body.light-mode .glass:hover {
+            background: rgba(255, 255, 255, 0.98);
+            border-color: rgba(0, 219, 255, 0.8);
+            box-shadow: 0 0 40px rgba(0, 219, 255, 0.25), 0 15px 45px rgba(0, 118, 214, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+        }
+
+        body.sidebar-collapsed #restore-sidebar {
+            display: flex;
+        }
+
+        .transcript-box {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .transcript-item {
+            padding: 1rem;
+            border-left: 2px solid rgba(0, 219, 255, 0.2);
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .transcript-item:hover {
+            border-left-color: var(--accent-cyan);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .pulse-deceptive {
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+
+        .logo-section img {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 10px rgba(0, 219, 255, 0.5));
+        }
+
+        /* Light Mode Utility Overrides */
+        body.light-mode .bg-white\/5 {
+            background-color: rgba(0, 118, 214, 0.05) !important;
+        }
+
+        body.light-mode .text-white,
+        body.light-mode .text-gray-100,
+        body.light-mode .text-gray-200,
+        body.light-mode .text-gray-300 {
+            color: #0f172a !important;
+        }
+
+        body.light-mode .text-gray-400,
+        body.light-mode .text-gray-500 {
+            color: #334155 !important;
+        }
+
+        body.light-mode .text-gray-600 {
+            color: #94a3b8 !important;
+        }
+        
+        body.light-mode .text-white {
+            color: #1e293b !important;
+        }
+
+        body.light-mode h1.text-white {
+            color: #1e293b !important;
+        }
+
+        body.light-mode .bg-slate-800 {
+            background-color: rgba(0, 118, 214, 0.08) !important;
+        }
+
+        body.light-mode .transcript-box {
+            background: rgba(255, 255, 255, 0.5) !important;
+            border: 1px solid rgba(0, 219, 255, 0.15) !important;
+            padding: 1.5rem !important;
+        }
+
+        body.light-mode .transcript-item {
+            background: white !important;
+            border-left: 4px solid #00DBFF !important;
+            border-radius: 1.25rem !important;
+            margin-bottom: 1.25rem !important;
+            box-shadow: 0 4px 12px rgba(0, 118, 214, 0.04) !important;
+            padding: 1.25rem !important;
+        }
+
+        body.light-mode .transcript-item:hover {
+            background: rgba(255, 255, 255, 0.9);
+            border-left-color: #00DBFF;
+            box-shadow: 0 4px 20px rgba(0, 118, 214, 0.06);
+        }
+
+        body.light-mode .bg-black\/20 {
+            background-color: rgba(0, 118, 214, 0.05) !important;
+        }
+
+        body.light-mode .pulse-deceptive {
+            animation: pulse-red-light 2s infinite;
+        }
+
+        @keyframes pulse-red-light {
+            0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.2), 0 0 40px rgba(0, 219, 255, 0.25); }
+            70% { box-shadow: 0 0 0 15px rgba(244, 63, 94, 0), 0 0 40px rgba(0, 219, 255, 0.25); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0), 0 0 40px rgba(0, 219, 255, 0.25); }
+        }
+
+        body.light-mode .bg-rose-500 {
+            background-color: #f43f5e !important;
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3);
+        }
+
+        body.light-mode .text-rose-500 {
+            color: #f43f5e !important;
+            text-shadow: 0 0 10px rgba(244, 63, 94, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Component Container -->
+    <script src="../js/components/sidebar.js"></script>
+    <script>
+        // Anti-Flash Theme Optimization
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+            if (savedTheme === 'light' || (!savedTheme && prefersLight)) {
+                document.body.classList.add('light-mode');
+            }
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                document.body.classList.add('sidebar-collapsed');
+            }
+        })();
+        initSidebar();
+    </script>
+
+    <main class="main-content">
+        <header class="flex justify-between items-end mb-12">
+            <div>
+                <button onclick="window.location.href='reports.html'" class="text-[10px] font-bold text-cyan-400 uppercase tracking-widest hover:text-cyan-300 mb-2 flex items-center cursor-pointer">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Archive
+                </button>
+                <h1 class="text-4xl font-black heading-font uppercase text-white tracking-widest">Analysis Report: John Doe</h1>
+                <div class="flex items-center space-x-4 mt-3">
+                    <span class="text-xs font-mono text-cyan-400 font-bold uppercase tracking-tighter">Reference: #4092-A</span>
+                    <span class="w-1.5 h-1.5 bg-white/20 rounded-full"></span>
+                    <span class="text-xs text-gray-400 uppercase tracking-widest font-bold">Analysis Date: 03 FEB 2024</span>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button id="theme-toggle" class="p-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-cyan-400 hover:bg-white/10 transition-all cursor-pointer" title="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+
+                <div class="flex space-x-3">
+                    <button class="px-6 py-3 bg-white/5 border border-white/10 text-white text-[10px] font-bold uppercase rounded-xl hover:bg-white/10 transition-all flex items-center cursor-pointer">
+                        <i class="fas fa-download mr-2 text-cyan-400"></i> Export PDF
+                    </button>
+                    <button class="px-6 py-3 bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-bold uppercase rounded-xl hover:bg-red-500 hover:text-white transition-all cursor-pointer">
+                        Archive Secret
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Summary & Deception Chart -->
+                <div class="glass p-10">
+                    <div class="flex justify-between items-start mb-10">
+                        <div>
+                            <h3 class="text-sm font-bold heading-font uppercase tracking-widest text-white mb-2">Truth Level Result</h3>
+                            <p class="text-xs text-gray-400">AI analysis of face and voice stress levels.</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-5xl font-black heading-font text-rose-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.4)]">78%</span>
+                            <p class="text-[10px] font-bold text-rose-400 uppercase mt-1 tracking-widest">Lying Risk Score</p>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="truthChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- AI Transcript -->
+                <div class="glass p-10">
+                    <h3 class="text-sm font-black heading-font uppercase tracking-[0.2em] text-[#0f172a] mb-8 flex items-center">
+                        <i class="fas fa-comment-dots mr-3 text-cyan-400"></i> Full Text Transcript
+                    </h3>
+                    <div class="transcript-box">
+                        <div class="transcript-item">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">Subject [02:14]</span>
+                                <span class="text-[9px] px-2 py-0.5 bg-rose-500/20 text-rose-400 rounded-full font-bold">Stress High</span>
+                            </div>
+                            <p class="text-sm text-gray-300 leading-relaxed italic">"I was never in the secure server room after 10 PM. The logs must be incorrect or tampered with by someone else."</p>
+                        </div>
+                        <div class="transcript-item">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">Subject [05:42]</span>
+                                <span class="text-[9px] px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full font-bold">Baseline Normal</span>
+                            </div>
+                            <p class="text-sm text-gray-300 leading-relaxed italic">"I have been working for this company for 8 years and have never had a security violation before this incident."</p>
+                        </div>
+                        <div class="transcript-item">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">Subject [08:30]</span>
+                                <span class="text-[9px] px-2 py-0.5 bg-rose-500/20 text-rose-400 rounded-full font-bold">Micro-tremor Alert</span>
+                            </div>
+                            <p class="text-sm text-gray-300 leading-relaxed italic">"I don't recognize the IP address used to access the database. I don't own any devices capable of that."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-8">
+                <!-- Conclusion Card -->
+                <div class="glass p-8 border-l-4 border-rose-500 pulse-deceptive">
+                    <h3 class="text-xs font-extrabold uppercase tracking-[0.2em] text-rose-500 mb-6">Final Result</h3>
+                    <div class="bg-black/20 p-6 rounded-2xl mb-6">
+                        <p class="text-sm text-gray-300 leading-relaxed">Subject showed unusual <span class="text-rose-400 font-bold">face muscle tension</span> during direct questioning. Combined with voice <span class="text-cyan-400 font-bold">pitch changes</span>, the AI detects high lying risk.</p>
+                    </div>
+                    <div class="p-4 bg-rose-500 text-white font-black heading-font text-center uppercase tracking-widest rounded-xl shadow-lg shadow-rose-500/20">
+                        Lying Risk High
+                    </div>
+                </div>
+
+                <!-- Metric Breakdown -->
+                <div class="glass p-8">
+                    <h3 class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-8">Metric Distribution</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <div class="flex justify-between text-[10px] font-bold uppercase text-gray-400 mb-2">
+                                <span>Eye Movement</span>
+                                <span class="text-rose-400">82 MHz</span>
+                            </div>
+                            <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                <div class="h-full bg-rose-500" style="width: 82%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] font-bold uppercase text-gray-400 mb-2">
+                                <span>Estimated Pulse</span>
+                                <span class="text-cyan-400">114 BPM</span>
+                            </div>
+                            <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                <div class="h-full bg-cyan-400" style="width: 65%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] font-bold uppercase text-gray-400 mb-2">
+                                <span>Asymmetry Ratio</span>
+                                <span class="text-rose-400">0.92 Delta</span>
+                            </div>
+                            <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                <div class="h-full bg-rose-500" style="width: 92%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Investigator Notes -->
+                <div class="glass p-8">
+                    <h3 class="text-[10px] text-[#1e293b] uppercase font-black tracking-[0.2em] mb-4">Investigator Notes</h3>
+                    <textarea class="w-full h-32 bg-transparent text-sm text-[#475569] border-none focus:outline-none resize-none font-medium" placeholder="Enter session notes here...">Subject was visibly agitated during the second phase. Recommend re-interview with polygraph synchronization.</textarea>
+                    <button class="w-full mt-4 py-3 bg-white/5 border border-white/10 rounded-xl text-[9px] font-bold uppercase text-gray-400 hover:text-white hover:bg-white/10 transition-all cursor-pointer">Save Notes</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const body = document.body;
+        const ctx = document.getElementById('truthChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['START', '2m', '4m', '6m', '8m', '10m', 'END'],
+                datasets: [{
+                    label: 'Deception Level',
+                    data: [10, 45, 30, 85, 92, 78, 80],
+                    borderColor: '#f43f5e',
+                    backgroundColor: 'rgba(244, 63, 94, 0.1)',
+                    borderWidth: 4,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#f43f5e',
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        max: 100, 
+                        grid: { color: body.classList.contains('light-mode') ? 'rgba(0,118,214,0.1)' : 'rgba(255,255,255,0.05)' },
+                        ticks: { color: body.classList.contains('light-mode') ? '#475569' : '#666', font: { family: 'Inter', weight: 'bold' } }
+                    },
+                    x: { 
+                        grid: { display: false },
+                        ticks: { color: body.classList.contains('light-mode') ? '#475569' : '#666', font: { family: 'Inter', weight: 'bold' } }
+                    }
+                }
+            }
+        });
+
+        function toggleSidebar() {
+            body.classList.toggle('sidebar-collapsed');
+            localStorage.setItem('sidebarCollapsed', body.classList.contains('sidebar-collapsed'));
+        }
+
+        // Theme Toggle Logic
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = themeToggle.querySelector('i');
+
+        function toggleTheme() {
+            const isLight = body.classList.toggle('light-mode');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            updateThemeUI(isLight);
+        }
+
+        function updateThemeUI(isLight) {
+            themeIcon.className = isLight ? 'fas fa-sun' : 'fas fa-moon';
+            themeToggle.classList.toggle('bg-gray-200', isLight);
+            themeToggle.classList.toggle('text-gray-900', isLight);
+            themeToggle.classList.toggle('border-gray-300', isLight);
+        }
+
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Update Theme UI state (icons, buttons)
+            updateThemeUI(body.classList.contains('light-mode'));
+        });
+        function closeApp() {
+            if(confirm("Are you sure you want to logout?")) {
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+</body>
+</html>

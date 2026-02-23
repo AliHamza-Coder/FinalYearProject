@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deceptron - Login</title>
+    <link rel="stylesheet" href="../styles/output.css">
+    <link rel="stylesheet" href="../vendor/font-awesome/css/all.min.css">
+    <script type="text/javascript" src="/eel.js"></script>
+    <style>
+        :root {
+            --primary-blue: #0076D6;
+            --accent-cyan: #00DBFF;
+            --bg-dark: #05080f;
+
+            /* Theme Tokens */
+            --bg-main: #05080f;
+            --text-main: #ffffff;
+            --text-dim: #94a3b8;
+            --card-glass: rgba(15, 23, 42, 0.4);
+            --border-subtle: rgba(255, 255, 255, 0.1);
+        }
+
+
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            transition: none;
+        }
+
+
+
+        .heading-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .login-card {
+            background: var(--card-glass);
+            backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid var(--border-subtle);
+            border-radius: 2.5rem;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-main);
+            transition: all 0.3s ease;
+        }
+
+
+
+        .input-field:focus {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 219, 255, 0.08);
+            box-shadow: 0 0 20px rgba(0, 219, 255, 0.3), inset 0 0 10px rgba(0, 219, 255, 0.1);
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-blue), var(--accent-cyan));
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 219, 255, 0.2);
+            color: white;
+        }
+
+
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 219, 255, 0.4);
+        }
+
+        .side-image {
+            background: linear-gradient(45deg, rgba(0, 118, 214, 0.1), rgba(0, 219, 255, 0.05)),
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><radialGradient id="g" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="%23007BD6" stop-opacity="0.3"/><stop offset="100%" stop-color="%2300DBFF" stop-opacity="0.1"/></radialGradient></defs><circle cx="500" cy="500" r="400" fill="url(%23g)"/><circle cx="300" cy="300" r="100" fill="%23007BD6" opacity="0.2"/><circle cx="700" cy="700" r="150" fill="%2300DBFF" opacity="0.15"/></svg>');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(0, 219, 255, 0.5);
+        }
+
+
+
+        @media (max-width: 1024px) {
+            .split-container {
+                flex-direction: column;
+            }
+            .side-image {
+                min-height: 300px;
+            }
+        }
+        @media (max-width: 768px) {
+            .side-image {
+                min-height: 250px;
+            }
+            .login-card {
+                margin: 1rem;
+                padding: 2rem 1.5rem;
+            }
+            .glow-text {
+                font-size: 1.5rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .side-image {
+                min-height: 200px;
+            }
+            .login-card {
+                padding: 1.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+
+    <div class="flex min-h-screen split-container">
+        <!-- Left Side - Image/Visual Content -->
+        <div class="flex-1 side-image relative flex items-center justify-center">
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-cyan-900/20"></div>
+            <div class="relative z-10 text-center p-8">
+                <img src="../assets/images/Logo1.png" alt="Deceptron Logo" class="w-40 h-40 lg:w-48 lg:h-48 mx-auto mb-6 object-contain drop-shadow-[0_0_30px_rgba(0,219,255,0.8)]">
+                <h1 class="heading-font text-3xl lg:text-4xl font-bold tracking-[0.3em] mb-4 glow-text">DECEPTRON</h1>
+                <p class="text-base lg:text-lg tracking-[0.5em] font-light text-cyan-300 opacity-90 uppercase mb-4">Truth Verification System</p>
+                <p class="text-sm text-gray-300 max-w-sm mx-auto leading-relaxed mb-8">Advanced neural analysis for truth verification and deception detection.</p>
+                <div class="w-24 h-1 bg-gradient-to-r from-blue-500 to-cyan-400 mx-auto rounded-full"></div>
+            </div>
+            
+            <!-- Floating Elements -->
+            <div class="absolute top-20 left-20 w-4 h-4 bg-cyan-400 rounded-full animate-pulse opacity-60"></div>
+            <div class="absolute bottom-32 right-16 w-6 h-6 bg-blue-500 rounded-full animate-pulse opacity-40" style="animation-delay: 1s;"></div>
+            <div class="absolute top-1/2 left-10 w-2 h-2 bg-cyan-300 rounded-full animate-pulse opacity-80" style="animation-delay: 2s;"></div>
+        </div>
+
+        <!-- Right Side - Login Form -->
+        <div class="flex-1 flex items-center justify-center p-8 bg-gradient-to-br from-slate-900/50 to-slate-800/30">
+            <div class="w-full max-w-md">
+                <div class="login-card">
+                    <div class="text-center mb-8">
+                        <div class="flex items-center justify-center space-x-4 mb-6">
+                            <div class="h-[1px] w-16 bg-gradient-to-r from-transparent to-cyan-400/50"></div>
+                            <h2 class="text-2xl font-light tracking-[0.3em] text-white uppercase glow-text">Login</h2>
+                            <div class="h-[1px] w-16 bg-gradient-to-l from-transparent to-cyan-400/50"></div>
+                        </div>
+                        <p class="text-gray-400 text-sm">Sign in to your account</p>
+                    </div>
+                    
+                    <form id="loginForm" class="space-y-6">
+                        <div>
+                            <input type="text" placeholder="Email or Username" required 
+                                class="input-field w-full px-6 py-4 rounded-2xl text-white placeholder-gray-500 text-sm font-light">
+                        </div>
+                        
+                        <div>
+                            <input type="password" placeholder="Password" required 
+                                class="input-field w-full px-6 py-4 rounded-2xl text-white placeholder-gray-500 text-sm font-light">
+                        </div>
+
+                        <div class="flex items-center justify-between text-sm">
+                            <label class="flex items-center cursor-pointer text-gray-400 hover:text-gray-300 transition-colors">
+                                <input type="checkbox" class="accent-cyan-500 rounded mr-3">
+                                <span>Remember me</span>
+                            </label>
+                            <a href="#" class="text-cyan-400 hover:text-cyan-300 transition-colors">Forgot password?</a>
+                        </div>
+
+                        <button type="submit" class="btn-primary w-full py-4 rounded-2xl font-semibold tracking-[0.2em] text-sm uppercase">
+                            Sign In
+                        </button>
+                    </form>
+
+                    <div class="mt-8 pt-6 border-t border-white/10 text-center">
+                        <p class="text-gray-400 text-sm">
+                            New to Deceptron? 
+                            <a href="signup.html" class="text-cyan-400 font-semibold hover:text-cyan-300 transition-all ml-1">Create Account</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Common utilities -->
+    <script src="../js/common/constants.js"></script>
+    <script src="../js/common/utils.js"></script>
+    <script src="../js/common/api.js"></script>
+    <script src="../js/common/auth.js"></script>
+    
+    <!-- Page-specific logic -->
+    <script src="../js/pages/login.js"></script>
+
+</body>
+</html>
