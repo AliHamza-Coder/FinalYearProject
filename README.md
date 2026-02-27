@@ -1,4 +1,4 @@
-# Deceptron - Lying Detection System (Phase 1 & 2)
+# Deceptron - Lying Detection System by Group Blue Section Blue
 
 Deceptron is a computer vision-based lying detection system. This current version focuses on high-accuracy facial emotion recognition and real-time face tracking.
 
