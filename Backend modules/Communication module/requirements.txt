@@ -1,0 +1,14 @@
+SpeechRecognition==3.10.0
+PyAudio==0.2.13
+faster-whisper==1.0.3
+groq==0.9.0
+httpx==0.27.0
+anyio==4.3.0
+python-dotenv==1.0.0
+speechbrain
+transformers
+praat-parselmouth
+librosa
+numpy
+torch
+soundfile

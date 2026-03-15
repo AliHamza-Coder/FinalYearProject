@@ -1,0 +1,29 @@
+# DECEPTRON - Required Python Packages
+# Python 3.9 recommended
+
+# Core Framework
+#eel
+
+# Computer Vision & Image Processing
+opencv-python==4.8.1.78
+mediapipe==0.10.9
+
+# Deep Learning & AI
+torch
+torchvision
+timm==0.9.2
+hsemotion
+
+# Database
+#tinydb
+
+# Data Processing
+numpy==1.26.4
+
+# Audio Processing
+#pyaudio
+
+# Additional Dependencies (auto-installed with above packages)
+# Pillow - Image processing
+# protobuf - MediaPipe dependency
+# attrs - MediaPipe dependency

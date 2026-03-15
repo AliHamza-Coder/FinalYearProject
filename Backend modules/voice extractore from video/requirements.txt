@@ -1,0 +1,19 @@
+# Core video/audio processing
+moviepy==1.0.3
+imageio==2.34.1
+imageio-ffmpeg==0.4.9
+
+# Audio processing
+pydub==0.25.1
+
+# Utilities
+tqdm==4.67.0
+numpy==1.26.4
+Pillow==10.2.0
+
+# Optional: for advanced features
+opencv-python==4.9.0.80
+ffmpeg-python==0.2.1
+decorator==5.1.1
+proglog==0.1.10
+requests==2.31.0
