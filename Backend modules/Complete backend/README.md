@@ -70,8 +70,13 @@ HUGGINGFACE_TOKEN=your_huggingface_token_here
 GROQ_API_KEY=your_groq_api_key_here
 ```
 
+- `HUGGINGFACE_TOKEN` is used to download and load the Hugging Face models used by `pyannote.audio`.
+- `GROQ_API_KEY` is used for the Groq LLM reasoning layer in NLP analysis.
+
 > [!IMPORTANT]
-> **Hugging Face Token**: You must accept the user terms for the `pyannote/speaker-diarization-3.1` and `pyannote/segmentation-3.0` models on Hugging Face to use the diarization feature.
+> **Hugging Face model access**: Log in to Hugging Face, accept the user terms for the model repositories `pyannote/speaker-diarization-3.1` and `pyannote/segmentation-3.0`, and ensure your token has read access.
+>
+> **Hugging Face token source**: Generate a token from https://huggingface.co/settings/tokens and paste it into `HUGGINGFACE_TOKEN`.
 
 ---
 
