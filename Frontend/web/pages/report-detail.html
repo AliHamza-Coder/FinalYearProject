@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deceptron - Report Detail #4092</title>
+    <link rel="icon" href="../assets/images/Eye icon.png">
+    <link rel="stylesheet" href="../styles/output.css">
+    <script src="../scripts/chart.min.js"></script>
+    <link rel="stylesheet" href="../vendor/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="../styles/sidebar.css">
+    <style>
+        :root {
+            --primary-blue: #2563eb;
+            /* Professional Royal Blue */
+            --accent-cyan: #0ea5e9;
+            /* Sky Blue */
+            --accent-rose: #ef4444;
+            --sidebar-width: 260px;
+
+            /* Vibrant University Pro Theme */
+            --bg-main: #0f172a;
+            /* Deep Navy */
+            --text-main: #ffffff;
+            --text-dim: #94a3b8;
+            --sidebar-bg: #0f172a;
+            --card-bg: #1e293b;
+            /* Solid Professional Surface */
+            --border-subtle: #334155;
+            /* Visible Slate Border */
+            --input-bg: #0f172a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            overflow: hidden;
+            width: 100vw;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.05) 0, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.05) 0, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .heading-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .glass {
+            background: var(--card-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .glass:hover {
+            border-color: rgba(0, 118, 214, 0.2);
+            box-shadow: 0 15px 45px rgba(0, 118, 214, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+        }
+
+        body.sidebar-collapsed #restore-sidebar {
+            display: flex;
+        }
+
+    .btn-primary {
+        background: rgba(37, 99, 235, 0.1);
+        border: 1px solid rgba(37, 99, 235, 0.3);
+        color: var(--accent-cyan);
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-blue);
+        color: #ffffff;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .btn-outline {
+        border: 1px solid var(--border-subtle);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-main);
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-outline:hover {
+        border-color: var(--primary-blue);
+        background: var(--primary-blue);
+        color: #ffffff;
+        box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+        transform: translateY(-2px);
+    }
+
+        .transcript-box {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 1.25rem;
+            border: 1px solid var(--border-subtle);
+            padding: 1.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .transcript-item {
+            background: var(--card-bg);
+            border-left: 3px solid var(--primary-blue);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .transcript-item:hover {
+            background: rgba(255, 255, 255, 0.02);
+            border-left-color: var(--accent-cyan);
+            transform: translateX(4px);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .pulse-deceptive {
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 118, 214, 0.1);
+            border-radius: 10px;
+        }
+
+        .logo-section img {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- Forensic Glow System --- */
+        .glow-cyan {
+            border: 1px solid var(--border-subtle) !important;
+        }
+
+        .glow-purple {
+            border: 1px solid var(--border-subtle) !important;
+        }
+
+        .glow-blue {
+            border: 1px solid var(--border-subtle) !important;
+        }
+
+        .glow-emerald {
+            border: 1px solid var(--border-subtle) !important;
+        }
+
+        .glow-amber {
+            border: 1px solid var(--border-subtle) !important;
+        }
+
+        .glow-rose {
+            border: 1px solid var(--border-subtle) !important;
+        }
+
+        .btn-primary {
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            color: var(--accent-cyan);
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-blue);
+            color: #ffffff;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            border: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary-blue);
+            background: var(--primary-blue);
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar Component Container -->
+    <script src="../js/components/sidebar.js"></script>
+    <script>
+        initSidebar();
+    </script>
+
+    <main class="main-content">
+        <header class="p-8 pb-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold heading-font text-white tracking-tight">Intelligence Report</h1>
+                <div class="flex items-center mt-2 text-[10px] text-dim font-bold tracking-[0.2em] uppercase">
+                    Session Identity: #4092-A • Verified
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <div class="flex space-x-4">
+                    <button class="btn-outline px-6 py-2 text-[10px]" onclick="window.print()">
+                        <i class="fas fa-download text-primary-blue"></i> Export PDF
+                    </button>
+                    <button class="btn-primary border-rose-500/30 text-rose-400 hover:bg-rose-600 hover:text-white text-[10px]">
+                        Archive Session
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="space-y-8">
+            <!-- Hero: Main Truth Level Chart -->
+            <div class="glass p-10">
+                <div class="flex justify-between items-start mb-10">
+                    <div>
+                        <h3 class="text-sm font-bold heading-font uppercase tracking-widest text-white mb-2">Session
+                            Timeline Result</h3>
+                        <p class="text-xs text-dim font-bold uppercase tracking-tighter">Synchronization of behavioral
+                            markers across session duration</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-5xl font-bold heading-font text-rose-500">78%</span>
+                        <p class="text-[10px] font-bold text-rose-400 uppercase mt-1 tracking-widest">Risk Index</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="truthChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Full Text Transcript Section -->
+            <div class="glass p-10">
+                <h3 class="text-sm font-bold heading-font uppercase tracking-[0.2em] text-white mb-8 flex items-center">
+                    <i class="fas fa-comment-dots mr-3 text-primary-blue"></i> Session Transcript
+                </h3>
+                <div class="transcript-box">
+                    <div class="transcript-item">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-[10px] font-bold text-primary-blue uppercase tracking-widest">Subject
+                                [02:14]</span>
+                            <span
+                                class="text-[9px] px-2 py-0.5 bg-rose-600/20 text-rose-400 border border-rose-500/20 rounded-full font-bold uppercase">Stress
+                                High</span>
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed italic">"I was never in the secure server room
+                            after 10 PM. The logs must be incorrect or tampered with by someone else."</p>
+                    </div>
+                    <div class="transcript-item">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-[10px] font-bold text-primary-blue uppercase tracking-widest">Subject
+                                [05:42]</span>
+                            <span
+                                class="text-[9px] px-2 py-0.5 bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 rounded-full font-bold uppercase">Baseline
+                                Normal</span>
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed italic">"I have been working for this company
+                            for 8 years and have never had a security violation before this incident."</p>
+                    </div>
+                    <div class="transcript-item">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-[10px] font-bold text-primary-blue uppercase tracking-widest">Subject
+                                [08:30]</span>
+                            <span
+                                class="text-[9px] px-2 py-0.5 bg-rose-600/20 text-rose-400 border border-rose-500/20 rounded-full font-bold uppercase">Micro-tremor
+                                Alert</span>
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed italic">"I don't recognize the IP address used
+                            to access the database. I don't own any devices capable of that."</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Standardized 3-Card Analysis Output Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Card 1: Output Context -->
+                <article class="glass p-8 space-y-5 border-white/5 group">
+                    <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center">
+                        <div
+                            class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center mr-3 transition-all duration-300">
+                            <i class="fas fa-info-circle text-blue-400"></i>
+                        </div>
+                        Session Context
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center text-[11px]">
+                            <span class="text-slate-400 font-medium">Capture Unit</span>
+                            <span class="text-slate-200 font-mono bg-white/5 px-2 py-0.5 rounded">DX-902-SECURE</span>
+                        </div>
+                        <div class="flex justify-between items-center text-[11px]">
+                            <span class="text-slate-400 font-medium">Integrity</span>
+                            <span class="text-emerald-400 font-bold">SHA-256 Passed</span>
+                        </div>
+                        <div class="flex justify-between items-center text-[11px]">
+                            <span class="text-slate-400 font-medium">Processor</span>
+                            <span class="text-slate-200 font-mono text-[9px] font-bold">Neural-Engine V4.2</span>
+                        </div>
+                        <div class="flex justify-between items-center text-[11px]">
+                            <span class="text-slate-400 font-medium">Record ID</span>
+                            <span class="text-slate-200 font-mono text-[9px] font-bold">#4092-A-ARCHIVE</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 2: Description -->
+                <article class="glass p-8 space-y-5 border-rose-500/10 group">
+                    <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center">
+                        <div
+                            class="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center mr-3 transition-all duration-300">
+                            <i class="fas fa-align-left text-rose-500"></i>
+                        </div>
+                        Conclusion
+                    </h3>
+                    <div class="space-y-4">
+                        <p class="text-[11px] text-slate-300 leading-relaxed font-medium">
+                            Subject showed unusual <span class="text-rose-400 font-bold uppercase">face muscle
+                                tension</span>
+                            during direct questioning. Combined with voice <span
+                                class="text-primary-blue font-bold uppercase">pitch
+                                changes</span>, the analysis detects high risk.
+                        </p>
+                        <ul class="space-y-2 text-[10px] text-dim">
+                            <li class="flex items-center">
+                                <span class="w-1 h-1 bg-rose-500 rounded-full mr-2"></span> Elevated pitch instability
+                            </li>
+                            <li class="flex items-center">
+                                <span class="w-1 h-1 bg-rose-500 rounded-full mr-2"></span> Micro-tremor cluster
+                                detected
+                            </li>
+                        </ul>
+                        <div class="pt-2">
+                            <span
+                                class="px-3 py-1.5 bg-rose-500/10 border border-rose-500/20 text-rose-500 text-[9px] font-bold uppercase rounded-lg">
+                                Verdict: RISK DETECTED
+                            </span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 3: Analysis % -->
+                <article class="glass p-8 space-y-8 border-cyan-500/10 group">
+                    <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center">
+                        <div
+                            class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center mr-3 transition-all duration-300">
+                            <i class="fas fa-chart-pie text-amber-500"></i>
+                        </div>
+                        Metric Breakdown
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-center space-y-3">
+                            <div class="relative w-20 h-20 mx-auto group">
+                                <canvas id="radialMetricA"></canvas>
+                                <div
+                                    class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                    <span class="text-xs font-bold text-white">82%</span>
+                                </div>
+                            </div>
+                            <span class="text-[9px] text-dim uppercase font-bold tracking-widest">Facial</span>
+                        </div>
+                        <div class="text-center space-y-3">
+                            <div class="relative w-20 h-20 mx-auto group">
+                                <canvas id="radialMetricB"></canvas>
+                                <div
+                                    class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                    <span class="text-xs font-bold text-white">65%</span>
+                                </div>
+                            </div>
+                            <span class="text-[9px] text-dim uppercase font-bold tracking-widest">Voice</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Investigator Notes (Extended Bottom Section) -->
+            <div class="glass p-10">
+                <h3 class="text-xs font-bold uppercase tracking-[0.2em] mb-6 text-white flex items-center">
+                    <i class="fas fa-clipboard-list mr-3 text-primary-blue"></i> Analyst Notes & Disposition
+                </h3>
+                <textarea
+                    class="w-full h-32 bg-slate-900/50 p-6 rounded-xl text-sm text-slate-200 border border-slate-700 focus:border-primary-blue focus:outline-none resize-none font-medium transition-all"
+                    placeholder="Enter session notes here...">Subject was visibly agitated during the second phase. Recommend re-interview with polygraph synchronization.</textarea>
+                <div class="mt-6 flex justify-end">
+                    <button
+                        class="px-10 py-4 bg-primary-blue text-white text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg shadow-blue-900/40 hover:bg-blue-600 transition-all cursor-pointer">
+                        Update Archive Notes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const ctx = document.getElementById('truthChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['START', '2m', '4m', '6m', '8m', '10m', 'END'],
+                datasets: [{
+                    label: 'Deception Level',
+                    data: [10, 45, 30, 85, 92, 78, 80],
+                    borderColor: '#f43f5e',
+                    backgroundColor: 'rgba(244, 63, 94, 0.05)',
+                    borderWidth: 4,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#f43f5e',
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#94a3b8', font: { family: 'Inter', weight: 'bold' } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8', font: { family: 'Inter', weight: 'bold' } }
+                    }
+                }
+            }
+        });
+
+        // Radial Charts
+        const ctxRadialA = document.getElementById('radialMetricA').getContext('2d');
+        new Chart(ctxRadialA, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [82, 18],
+                    backgroundColor: ['#0076D6', 'rgba(0,118,214,0.05)'],
+                    borderWidth: 0,
+                    cutout: '80%',
+                    borderRadius: 10
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        const ctxRadialB = document.getElementById('radialMetricB').getContext('2d');
+        new Chart(ctxRadialB, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [65, 35],
+                    backgroundColor: ['#f43f5e', 'rgba(0,118,214,0.05)'],
+                    borderWidth: 0,
+                    cutout: '80%',
+                    borderRadius: 10
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        function closeApp() {
+            if (confirm("Are you sure you want to logout?")) {
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+    </script>
+</body>
+
+</html>

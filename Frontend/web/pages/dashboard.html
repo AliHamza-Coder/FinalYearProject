@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deceptron - Dashboard Hub</title>
+    <link rel="icon" href="../assets/images/Eye icon.png">
+    <link rel="stylesheet" href="../styles/output.css">
+    <script src="../scripts/chart.min.js"></script>
+    <link rel="stylesheet" href="../vendor/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="../styles/sidebar.css">
+    <script type="text/javascript" src="/eel.js"></script>
+    <style>
+        :root {
+            --primary-blue: #2563eb; /* Professional Royal Blue */
+            --accent-cyan: #0ea5e9; /* Sky Blue */
+            --accent-rose: #ef4444;
+            --sidebar-width: 260px;
+            
+            /* Vibrant University Pro Theme */
+            --bg-main: #0f172a; /* Deep Navy */
+            --text-main: #ffffff;
+            --text-dim: #94a3b8;
+            --sidebar-bg: #0f172a;
+            --card-bg: #1e293b; /* Solid Professional Surface */
+            --border-subtle: #334155; /* Visible Slate Border */
+            --input-bg: #0f172a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            overflow: hidden;
+            width: 100vw;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.05) 0, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.05) 0, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .heading-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        button, a, select, .nav-item, .cursor-pointer, .card, .analysis-row {
+            cursor: pointer !important;
+        }
+
+        .glass {
+            background: var(--card-bg);
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            border-radius: 2.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .glass:hover {
+            background: rgba(255, 255, 255, 0.02);
+            border-color: var(--primary-blue);
+            box-shadow: 0 15px 45px rgba(0, 118, 214, 0.1);
+            transform: translateY(-2px);
+        }
+
+    .btn-primary {
+        background: rgba(37, 99, 235, 0.1);
+        border: 1px solid rgba(37, 99, 235, 0.3);
+        color: var(--accent-cyan);
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-blue);
+        color: #ffffff;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .btn-outline {
+        border: 1px solid var(--border-subtle);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-main);
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-outline:hover {
+        border-color: var(--primary-blue);
+        background: var(--primary-blue);
+        color: #ffffff;
+        box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+        transform: translateY(-2px);
+    }
+
+        .main-content {
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 1.5rem;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .card:hover {
+            border-color: var(--primary-blue);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            transform: translateY(-4px);
+        }
+
+        .btn-action {
+            color: var(--accent-cyan);
+            font-size: 0.875rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .btn-action:hover {
+            color: var(--text-main);
+            transform: translateX(5px);
+        }
+
+        .btn-primary {
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            color: var(--accent-cyan);
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-blue);
+            color: #ffffff;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            border: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary-blue);
+            background: var(--primary-blue);
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.1), transparent);
+            transition: 0.5s;
+        }
+
+        .card:hover::before {
+            left: 100%;
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.4); }
+            50% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.4); }
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+            animation: pulse-glow 2s infinite;
+        }
+
+        .analysis-row {
+            border-bottom: 1px solid var(--border-subtle);
+            transition: all 0.3s ease;
+        }
+
+        .analysis-row:last-child {
+            border-bottom: none;
+        }
+
+        .analysis-row:hover {
+            background: rgba(255, 255, 255, 0.03);
+            transform: scale(1.005);
+        }
+
+        .progress-bar-bg {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 118, 214, 0.2);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 118, 214, 0.4);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+
+        /* --- Forensic Glow System --- */
+        .glow-cyan { border: 1px solid var(--border-subtle) !important; }
+        .glow-purple { border: 1px solid var(--border-subtle) !important; }
+        .glow-blue { border: 1px solid var(--border-subtle) !important; }
+        .glow-emerald { border: 1px solid var(--border-subtle) !important; }
+        .glow-amber { border: 1px solid var(--border-subtle) !important; }
+        .glow-rose { border: 1px solid var(--border-subtle) !important; }
+        .glow-slate { border: 1px solid var(--border-subtle) !important; }
+
+        .group:hover .glow-cyan { border-color: var(--primary-blue) !important; background: rgba(37, 99, 235, 0.1) !important; }
+        .group:hover .glow-purple { border-color: var(--primary-blue) !important; background: rgba(37, 99, 235, 0.1) !important; }
+        .group:hover .glow-blue { border-color: var(--primary-blue) !important; background: rgba(37, 99, 235, 0.1) !important; }
+        .group:hover .glow-emerald { border-color: var(--primary-blue) !important; background: rgba(37, 99, 235, 0.1) !important; }
+
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar Component Container -->
+    <script src="../js/components/sidebar.js"></script>
+    <script>
+        initSidebar();
+    </script>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="p-8 pb-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-bold heading-font text-white tracking-tight">Dashboard Hub</h1>
+                <p class="text-sm text-dim mt-1">Ready for behavioral analysis</p>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <button class="btn-outline px-6 py-2.5 text-[10px] hidden md:flex" onclick="triggerImport()">
+                    <i class="fas fa-file-import text-primary-blue"></i> Import Intelligence
+                </button>
+                <div class="flex items-center space-x-3 p-1.5 bg-blue-500/5 rounded-2xl border border-blue-500/10 cursor-pointer hover:bg-blue-500/10 transition-all"
+                    onclick="window.location.href='profile.html'">
+                    <div id="profile-initials"
+                        class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-xs font-bold text-white shadow-lg shadow-cyan-500/20 overflow-hidden">
+                        ...
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <script>
+            // Real User Data Loading for Dashboard
+            async function loadUserData() {
+                try {
+                    const user = await eel.get_current_user()();
+                    if (user) {
+                        const name = user.fullname || user.username || 'Agent';
+                        const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                        const initialsContainer = document.getElementById('profile-initials');
+                        
+                        if (user.avatar) {
+                            initialsContainer.innerHTML = `<img src="${user.avatar}" class="w-full h-full object-cover">`;
+                            initialsContainer.classList.remove('bg-gradient-to-br', 'from-blue-500', 'to-cyan-400');
+                        } else {
+                            initialsContainer.innerText = initials;
+                        }
+                    } else {
+                        window.location.href = 'login.html';
+                    }
+                } catch (err) {
+                    console.error("Data load failed:", err);
+                }
+            }
+            document.addEventListener('DOMContentLoaded', loadUserData);
+        </script>
+
+        <section class="p-8 pt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Action Cards -->
+            <div class="card p-8 group cursor-pointer" onclick="window.location.href='start-session.html'">
+                <div class="scanning-line"></div>
+                <div
+                    class="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 mb-6 transition-all duration-300 glow-blue">
+                    <i class="fas fa-video-camera text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Start Session</h3>
+                <p class="text-sm text-dim mb-6 leading-relaxed">AI-powered behavioral analysis and stress monitoring from recorded video footage.</p>
+                <button class="btn-primary w-full py-3 mt-4 text-[10px]" onclick="window.location.href='start-session.html'">
+                    Launch Unit <i class="fas fa-arrow-right text-xs"></i>
+                </button>
+            </div>
+
+            <div class="card p-8 group cursor-pointer" onclick="window.location.href='uploads.html'">
+                <div class="scanning-line"></div>
+                <div
+                    class="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500 mb-6 transition-all duration-300 glow-purple">
+                    <i class="fas fa-cloud-arrow-up text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Batch Media</h3>
+                <p class="text-sm text-dim mb-6 leading-relaxed">Process recorded evidence and pre-recorded video
+                    files.</p>
+                <button class="btn-primary w-full py-3 mt-4 text-[10px]" onclick="window.location.href='uploads.html'">
+                    Scan Files <i class="fas fa-arrow-right text-xs"></i>
+                </button>
+            </div>
+
+            <div class="card p-8 group cursor-pointer" onclick="window.location.href='reports.html'">
+                <div class="scanning-line"></div>
+                <div
+                    class="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-6 transition-all duration-300 glow-emerald">
+                    <i class="fas fa-file-shield text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Case Reports</h3>
+                <p class="text-sm text-dim mb-6 leading-relaxed">View all reports and saved data summaries.</p>
+                <button class="btn-primary w-full py-3 mt-4 text-[10px]" onclick="window.location.href='reports.html'">
+                    View Archive <i class="fas fa-arrow-right text-xs"></i>
+                </button>
+            </div>
+        </section>
+
+        <section class="p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Recent Analysis Table -->
+            <div class="lg:col-span-2 card p-8 h-fit">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-xl font-bold">Recent Analysis</h3>
+                    <a href="reports.html"
+                        class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors uppercase tracking-widest font-bold">History</a>
+                </div>
+                <div class="space-y-2">
+                    <!-- Table Header -->
+                    <div
+                        class="grid grid-cols-12 gap-4 px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                        <div class="col-span-5">Subject</div>
+                        <div class="col-span-2">Time</div>
+                        <div class="col-span-4 text-center">Lying Risk</div>
+                        <div class="col-span-1"></div>
+                    </div>
+
+                    <!-- Rows -->
+                    <div class="analysis-row grid grid-cols-12 gap-4 items-center px-4 py-4 rounded-xl cursor-pointer group" onclick="window.location.href='report-detail.html'">
+                        <div class="col-span-5 flex items-center space-x-3">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-xs border border-slate-700 transition-all duration-300">
+                                <i class="fas fa-user-secret text-slate-400"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold">John Doe</div>
+                                <div class="text-[10px] text-slate-500">Ref: #4092</div>
+                            </div>
+                        </div>
+                        <div class="col-span-2 text-xs text-slate-500">Today, 14:30</div>
+                        <div class="col-span-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-1 progress-bar-bg">
+                                    <div class="progress-bar-fill bg-rose-500" style="width: 78%"></div>
+                                </div>
+                                <span class="text-xs font-bold text-rose-500">78%</span>
+                            </div>
+                        </div>
+                        <div class="col-span-1 text-right">
+                            <button class="text-gray-500 hover:text-cyan-400 cursor-pointer"
+                                onclick="window.location.href='report-detail.html'"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="analysis-row grid grid-cols-12 gap-4 items-center px-4 py-3 rounded-xl cursor-pointer group" onclick="window.location.href='report-detail.html'">
+                        <div class="col-span-5 flex items-center space-x-3">
+                            <div
+                                class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-xs border border-slate-100 glow-slate transition-all duration-300">
+                                <i class="fas fa-user text-slate-400"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold">Jane Smith</div>
+                                <div class="text-[10px] text-gray-500">Ref: #4091</div>
+                            </div>
+                        </div>
+                        <div class="col-span-2 text-xs text-slate-500">Today, 11:15</div>
+                        <div class="col-span-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-1 progress-bar-bg">
+                                    <div class="progress-bar-fill bg-emerald-500" style="width: 12%"></div>
+                                </div>
+                                <span class="text-xs font-bold text-emerald-600">12%</span>
+                            </div>
+                        </div>
+                        <div class="col-span-1 text-right">
+                            <button class="text-gray-500 hover:text-cyan-400 cursor-pointer"
+                                onclick="window.location.href='report-detail.html'"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="analysis-row grid grid-cols-12 gap-4 items-center px-4 py-3 rounded-xl cursor-pointer group" onclick="window.location.href='report-detail.html'">
+                        <div class="col-span-5 flex items-center space-x-3">
+                            <div
+                                class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-xs border border-slate-100 glow-slate transition-all duration-300">
+                                <i class="fas fa-mask text-slate-400"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold">Unknown</div>
+                                <div class="text-[10px] text-gray-500">Ref: #4090</div>
+                            </div>
+                        </div>
+                        <div class="col-span-2 text-xs text-slate-500">Oct 23, 16:50</div>
+                        <div class="col-span-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-1 progress-bar-bg">
+                                    <div class="progress-bar-fill bg-amber-500" style="width: 45%"></div>
+                                </div>
+                                <span class="text-xs font-bold text-amber-600">45%</span>
+                            </div>
+                        </div>
+                        <div class="col-span-1 text-right">
+                            <button class="text-gray-500 hover:text-cyan-400 cursor-pointer"
+                                onclick="window.location.href='report-detail.html'"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trend Analysis Chart -->
+            <div class="card p-8">
+                <h3 class="text-xl font-bold mb-8">Trend Analysis</h3>
+                <div class="chart-container flex items-center justify-center">
+                    <canvas id="trendChart"></canvas>
+                    <div class="absolute text-center">
+                        <span class="block text-3xl font-bold heading-font text-white">124</span>
+                        <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Cases</span>
+                    </div>
+                </div>
+
+                <div class="mt-8 space-y-4">
+                    <div class="flex items-center justify-between group">
+                        <div class="flex items-center px-3 py-1 bg-white/5 rounded-full transition-all">
+                            <span class="w-2 h-2 rounded-full bg-rose-500 mr-2"></span>
+                            <span class="text-xs text-slate-400">High Lying Risk</span>
+                        </div>
+                        <span class="text-xs font-bold text-slate-300">35%</span>
+                    </div>
+                    <div class="flex items-center justify-between group">
+                        <div class="flex items-center px-3 py-1 bg-white/5 rounded-full transition-all">
+                            <span class="w-2 h-2 rounded-full bg-amber-500 mr-2"></span>
+                            <span class="text-xs text-slate-400">Not Sure</span>
+                        </div>
+                        <span class="text-xs font-bold text-slate-300">25%</span>
+                    </div>
+                    <div class="flex items-center justify-between group">
+                        <div class="flex items-center px-3 py-1 bg-white/5 rounded-full transition-all">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2"></span>
+                            <span class="text-xs text-slate-400">Trustworthy</span>
+                        </div>
+                        <span class="text-xs font-bold text-slate-300">40%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const ctx = document.getElementById('trendChart').getContext('2d');
+        const trendChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['High Lying Risk', 'Not Sure', 'Trustworthy'],
+                datasets: [{
+                    data: [35, 25, 40],
+                    backgroundColor: [
+                        '#f43f5e', // rose-500
+                        '#f59e0b', // amber-500
+                        '#10b981'  // emerald-500
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 10,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                cutout: '80%',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                        tooltip: {
+                        enabled: true,
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        titleFont: { family: 'Orbitron' },
+                        bodyFont: { family: 'Inter' },
+                        padding: 12,
+                        cornerRadius: 12,
+                        displayColors: false
+                    }
+                },
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Simple Nav Toggle (for simulation)
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                navItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+
+        const body = document.body;
+
+
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check session
+            try {
+                const result = await eel.get_current_user()();
+                const user = (result.success && result.data) ? result.data : null;
+                
+                if (!user) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Update Header Name/Initials
+                const userInitials = document.getElementById('profile-initials');
+                if (userInitials && (user.fullname || user.username)) {
+                    const name = user.fullname || user.username;
+                    const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                    if (!user.avatar) {
+                        userInitials.textContent = initials;
+                    }
+                }
+            } catch (err) {
+                console.error("Auth check failed:", err);
+                window.location.href = 'login.html';
+                return;
+            }
+        });
+
+        // Logout logic is now handled globally by sidebar.js
+    </script>
+</body>
+</html>

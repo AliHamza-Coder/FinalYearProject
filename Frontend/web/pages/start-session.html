@@ -1,0 +1,1770 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deceptron - Live Analysis Unit</title>
+  <link rel="icon" href="../assets/images/Eye icon.png">
+  <!-- Eel for Python-JavaScript Communication -->
+  <script src="/eel.js"></script>
+  <link rel="stylesheet" href="../styles/output.css" />
+  <script src="../scripts/chart.min.js"></script>
+  <script src="../js/components/loader.js"></script>
+  <script src="../scripts/wavesurfer.min.js"></script>
+  <link rel="stylesheet" href="../vendor/font-awesome/css/all.min.css" />
+  <link rel="stylesheet" href="../styles/sidebar.css" />
+ <style>
+    :root {
+      --primary-blue: #2563eb;
+      --accent-cyan: #0ea5e9;
+      --sidebar-width: 260px;
+
+      /* Vibrant University Pro Theme */
+      --bg-main: #0f172a;
+      --text-main: #ffffff;
+      --text-dim: #94a3b8;
+      --sidebar-bg: #0f172a;
+      --card-bg: #1e293b;
+      --border-subtle: #334155;
+      --modal-bg: #1e293b;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      background: #334155;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 0.5rem;
+    }
+
+    body {
+      font-family: "Inter", sans-serif;
+      background: var(--bg-main);
+      color: var(--text-main);
+      margin: 0;
+      overflow: hidden;
+      width: 100vw;
+      background-image:
+        radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.05) 0, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.05) 0, transparent 50%);
+      background-attachment: fixed;
+    }
+
+    .heading-font {
+      font-family: "Orbitron", sans-serif;
+    }
+
+    button,
+    a,
+    select,
+    input[type="checkbox"],
+    .nav-item,
+    .cursor-pointer {
+      cursor: pointer !important;
+    }
+
+    .main-content {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Shared UI Elements */
+    /* Modal Styling */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(15px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      width: 100%;
+      max-width: 700px;
+      background: var(--modal-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 1.5rem;
+      padding: 2.5rem;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .vault-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--accent-cyan);
+    }
+
+    .glass {
+      background: var(--card-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 1.5rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .glass:hover {
+      border-color: var(--primary-blue);
+      transform: translateY(-2px);
+    }
+
+    body.sidebar-collapsed #restore-sidebar {
+      display: flex;
+    }
+
+    /* Video Area */
+    .video-container {
+      position: relative;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 1.5rem;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      height: 480px;
+      transition: all 0.4s ease;
+    }
+
+    .hud-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(to bottom,
+          rgba(0, 0, 0, 0.2) 0%,
+          transparent 20%,
+          transparent 80%,
+          rgba(0, 0, 0, 0.3) 100%);
+    }
+
+    /* Controls */
+    .btn-action {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--bg-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .btn-action:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--primary-blue);
+      transform: translateY(-2px);
+      border-color: var(--primary-blue);
+    }
+
+    .btn-action.active {
+      background: var(--primary-blue);
+      color: white;
+      border-color: var(--primary-blue);
+    }
+
+    /* Dropdown Styling Fix */
+    select {
+      -webkit-appearance: none;
+      appearance: none;
+      background-color: var(--card-bg);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%232563eb'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+      background-position: right 0.75rem center;
+      background-repeat: no-repeat;
+      background-size: 1rem;
+      border: 1px solid var(--border-subtle);
+      border-radius: 0.75rem;
+      padding: 0.5rem 2rem 0.5rem 1rem;
+      color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: bold;
+      transition: all 0.2s ease;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: var(--primary-blue);
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-primary {
+      background: rgba(37, 99, 235, 0.1);
+      border: 1px solid rgba(37, 99, 235, 0.3);
+      color: var(--accent-cyan);
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-blue);
+      color: #ffffff;
+      border-color: var(--primary-blue);
+      box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      border: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--primary-blue);
+      background: var(--primary-blue);
+      color: #ffffff;
+      box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .logo-section img {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 0 10px rgba(0, 219, 255, 0.5));
+    }
+
+    /* Status Pills */
+    .status-pill {
+      padding: 4px 12px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status-pill-anger {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .status-pill-stress {
+      background: rgba(168, 85, 247, 0.1);
+      color: #a855f7;
+      border: 1px solid rgba(168, 85, 247, 0.2);
+    }
+
+    .status-pill-neutral {
+      background: rgba(148, 163, 184, 0.1);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .status-pill-calm {
+      background: rgba(6, 182, 212, 0.1);
+      color: #06b6d4;
+      border: 1px solid rgba(6, 182, 212, 0.2);
+    }
+
+    .active-member-info {
+      color: var(--primary-blue) !important;
+      font-weight: 700;
+    }
+
+    /* Voice / Vocal Timeline Table */
+    .voice-table-container {
+      max-height: 400px;
+      overflow-y: auto;
+      border-radius: 1rem;
+      border: 1px solid var(--border-subtle);
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .voice-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .voice-table th {
+      background: var(--bg-main);
+      color: var(--primary-blue);
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      padding: 1.25rem 1rem;
+      text-align: left;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .voice-table td {
+      padding: 1.25rem 1rem;
+      font-size: 11px;
+      color: #ffffff;
+      border-bottom: 1px solid var(--border-subtle);
+      transition: all 0.2s ease;
+    }
+
+    .voice-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--primary-blue);
+    }
+
+    .voice-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .truth-chart-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 1.5rem;
+      padding: 2.5rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .transcript-box {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 1rem;
+      border: 1px solid var(--border-subtle);
+      padding: 2rem;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .transcript-item {
+      background: var(--bg-main);
+      border-left: 4px solid var(--accent-cyan);
+      border-radius: 1rem;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+      transition: all 0.2s ease;
+    }
+
+    .transcript-item:hover {
+      background: rgba(255, 255, 255, 0.02);
+      border-left-color: var(--primary-blue);
+      transform: translateX(5px);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar Component Container -->
+  <!-- Common utilities -->
+  <script src="../js/common/constants.js"></script>
+  <script src="../js/common/utils.js"></script>
+  <script src="../js/common/api.js"></script>
+  <script src="../js/common/auth.js"></script>
+  <script src="../js/common/media-recorder.js"></script>
+  <!-- Components -->
+  <script src="../js/components/sidebar.js"></script>
+  <script src="../js/components/vault-component.js"></script>
+
+  <script>
+    initSidebar();
+  </script>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Header Section -->
+    <header class="p-8 pb-4 flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold heading-font flex items-center">
+          <span class="w-2 h-2 bg-red-500 rounded-full mr-3 animate-pulse"></span>
+          Start Session
+        </h1>
+        <div class="flex items-center mt-2 text-xs text-cyan-400 font-medium tracking-wide active-member-info">
+          <span class="status-dot"></span>
+          Session Ready
+        </div>
+      </div>
+      <div class="flex items-center space-x-3">
+        <button
+          class="btn-outline px-6 py-2.5 flex items-center"
+          onclick="openVault()">
+          <i class="fas fa-folder-open text-primary-blue mr-2"></i> Load from Vault
+        </button>
+      </div>
+    </header>
+
+    <!-- Top Grid: Video & Config -->
+    <div class="grid grid-cols-12 gap-6 px-4">
+      <!-- Video Column -->
+      <div class="col-span-12 xl:col-span-9 space-y-4">
+        <div class="video-container group">
+          <div id="camOffState"
+            class="absolute inset-0 bg-[#020408] flex flex-col items-center justify-center text-gray-800 transition-opacity duration-500 z-10">
+            <i class="fas fa-video-slash text-7xl mb-6 opacity-20"></i>
+            <p class="text-sm font-mono tracking-[0.3em] uppercase opacity-30">
+              Camera Interface: Offline
+            </p>
+            <button
+              class="mt-6 px-8 py-2.5 btn-primary rounded-full"
+              onclick="toggleCamera()">
+              Turn on Camera
+            </button>
+          </div>
+
+          <div id="camOnState" class="absolute inset-0 bg-black hidden">
+            <div class="absolute inset-0 bg-cyan-900/10 flex items-center justify-center text-gray-600">
+              <i class="fas fa-spinner fa-spin text-4xl text-cyan-500"></i>
+            </div>
+            <video id="webcam" class="absolute inset-0 w-full h-full object-cover" style="transform: scaleX(-1)"
+              muted></video>
+            <canvas id="recordCanvas" class="hidden"></canvas>
+          </div>
+
+          <div class="absolute top-6 right-6 z-20">
+            <button
+              class="w-8 h-8 flex items-center justify-center bg-black/60 backdrop-blur-md rounded-lg border border-white/10 hover:bg-white/20 transition-all text-white"
+              title="Enlarge Screen" onclick="toggleFullScreen()">
+              <i class="fas fa-expand"></i>
+            </button>
+          </div>
+
+          <!-- Notification Toast inside Video -->
+          <div id="videoToast"
+            class="absolute top-20 left-1/2 -translate-x-1/2 z-30 transition-all duration-500 opacity-0 translate-y-4">
+            <div
+              class="px-6 py-2 bg-cyan-500 text-white text-[10px] font-bold uppercase rounded-full shadow-lg shadow-cyan-500/40">
+              Camera Status: Online
+            </div>
+          </div>
+
+          <!-- Frame Overlay -->
+          <div class="frame-overlay" id="frameOverlay" style="display: none;">
+            <div class="frame-counter">Frame <span id="currentFrameNum">0001</span> / 0144</div>
+            <div class="frame-emotion text-red-400" id="currentFrameEmotion">
+              <i class="fas fa-fire-alt mr-1"></i> Anger: 88.4%
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls Bar -->
+        <div class="glass p-4 flex justify-between items-center px-6">
+          <div class="flex items-center space-x-4">
+            <button id="camBtn"
+              class="w-10 h-10 rounded-xl bg-primary-blue/10 border border-primary-blue/20 text-primary-blue flex items-center justify-center hover:bg-primary-blue hover:text-white transition-all duration-300"
+              onclick="toggleCamera()">
+              <i class="fas fa-camera"></i>
+            </button>
+            <!-- Pause Button -->
+            <button id="pauseBtn"
+              class="w-10 h-10 rounded-xl flex items-center justify-center text-amber-500 hover:text-white hover:bg-amber-500 transition-all border border-amber-500/20 hidden"
+              onclick="togglePause()">
+              <i class="fas fa-pause"></i>
+            </button>
+
+            <div class="h-8 w-[1px] bg-white/10 mx-2"></div>
+
+            <!-- REC Indicator -->
+            <div id="recIndicator"
+              class="flex items-center bg-rose-500/10 border border-rose-500/20 px-2 py-1 rounded-md hidden mr-2">
+              <span class="w-2 h-2 bg-rose-600 rounded-full animate-pulse mr-1.5"></span>
+              <span class="text-[9px] font-bold text-rose-500 uppercase tracking-tighter">REC</span>
+            </div>
+
+            <div class="text-xl font-mono text-white/80 tabular-nums" id="recordingTimer">
+              00:00:00
+            </div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <button id="sessionBtn"
+              class="btn-primary px-10 py-3 text-xs"
+              onclick="handleSessionToggle()">
+              <i class="fas fa-play mr-2"></i> Start Recording
+            </button>
+            <button id="analyseBtn"
+              class="btn-primary px-10 py-3 text-xs hidden"
+              onclick="finalizeAnalysis()">
+              <i class="fas fa-brain mr-2"></i> Analyse
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Configuration Sidebar -->
+      <div class="col-span-12 xl:col-span-3">
+        <div class="glass p-6 h-full flex flex-col space-y-6">
+          <h3 class="text-xs font-bold uppercase tracking-widest text-cyan-400 flex items-center">
+            <i class="fas fa-cog mr-2"></i> Configuration
+          </h3>
+
+          <div class="space-y-5">
+            <div class="space-y-2">
+              <label class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Camera Source</label>
+              <select id="cameraSelect"
+                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-cyan-400 appearance-none transition-all cursor-pointer">
+                <option>Loading cameras...</option>
+              </select>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Microphone Source</label>
+              <select id="microphoneSelect"
+                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-cyan-400 appearance-none transition-all cursor-pointer">
+                <option>Loading microphones...</option>
+              </select>
+            </div>
+
+            <div class="pt-4 flex flex-col gap-3">
+              <button onclick="openVault()"
+                class="w-full py-3 bg-purple-600/10 border border-purple-500/30 text-purple-400 text-[9px] font-bold uppercase rounded-xl hover:bg-purple-600 hover:text-white transition-all flex items-center justify-center gap-2">
+                <i class="fas fa-folder-open"></i> Load from Vault
+              </button>
+              <button id="clearVaultBtn"
+                class="w-full py-3 bg-rose-500/10 border border-rose-500/30 text-rose-500 text-[9px] font-bold uppercase rounded-xl hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center gap-2"
+                onclick="clearVault()">
+                <i class="fas fa-undo"></i> Clear Vault
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forensic Analytics & Detailed Breakdown -->
+    <div class="col-span-12 grid grid-cols-12 gap-6 pb-8">
+      <!-- AI Analysis Results Section Header -->
+      <div class="col-span-12 mb-2">
+        <div class="flex items-center space-x-3 text-cyan-400 mb-2">
+          <div class="h-[1px] flex-1 bg-cyan-500/20"></div>
+          <h2 class="text-[11px] font-bold uppercase tracking-[0.3em] whitespace-nowrap text-center">
+            AI Analysis Results
+          </h2>
+          <div class="h-[1px] flex-1 bg-cyan-500/20"></div>
+        </div>
+      </div>
+
+      <!-- Forensic Analytics & Detailed Breakdown -->
+      <div class="col-span-12 grid grid-cols-12 gap-6 pb-8">
+        <!-- Hero: Main Truth Level Chart -->
+        <div class="col-span-12 truth-chart-card">
+          <div class="flex justify-between items-start mb-10">
+            <div>
+              <h3 class="text-sm font-bold heading-font uppercase tracking-widest text-white mb-2">Forensic Timeline Result</h3>
+              <p class="text-xs text-gray-400">Deep neural synchronization of behavioral markers across the session duration.</p>
+            </div>
+            <div class="text-right">
+              <span class="text-5xl font-black heading-font text-rose-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.4)]">78%</span>
+              <p class="text-[10px] font-bold text-rose-400 uppercase mt-1 tracking-widest">Session Risk Index</p>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="truthChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Visual Circular Graphs Section -->
+        <div id="circularGraphsSection" class="col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Graph 1: Overall Emotion Distribution -->
+          <article class="glass p-6 border-cyan-500/10">
+            <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center mb-4">
+              <i class="fas fa-chart-pie mr-2 text-cyan-400"></i> Overall Emotion Distribution
+            </h3>
+            <div class="relative h-48 flex items-center justify-center">
+              <canvas id="emotionDistributionChart" width="180" height="180"></canvas>
+              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span class="text-2xl font-bold text-emerald-400">60%</span>
+                <span class="text-[8px] text-gray-500 uppercase tracking-tighter">Neutrality</span>
+              </div>
+            </div>
+            <div class="mt-4 space-y-2 text-[10px]">
+              <div class="flex justify-between items-center">
+                <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>Neutral</span>
+                <span class="text-emerald-400 font-bold">60%</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-400"></span>Anger</span>
+                <span class="text-amber-400 font-bold">25%</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-400"></span>Fear</span>
+                <span class="text-rose-400 font-bold">15%</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Graph 2: Eye Movement Tracking -->
+          <article class="glass p-6 border-purple-500/10">
+            <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center mb-4">
+              <i class="fas fa-eye mr-2 text-purple-400"></i> Eye Movement Tracking
+            </h3>
+            <div class="relative h-48 flex items-center justify-center">
+              <canvas id="eyeMovementChart" width="180" height="180"></canvas>
+              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span class="text-2xl font-bold text-cyan-400">70%</span>
+                <span class="text-[8px] text-gray-500 uppercase tracking-tighter">Steady Gaze</span>
+              </div>
+            </div>
+            <div class="mt-4 space-y-2 text-[10px]">
+              <div class="flex justify-between items-center">
+                <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-cyan-400"></span>Steady Gaze</span>
+                <span class="text-cyan-400 font-bold">70%</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-400"></span>Rapid Blinking</span>
+                <span class="text-amber-400 font-bold">30%</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Graph 3: Lips & Jaw Anomalies -->
+          <article class="glass p-6 border-amber-500/10">
+            <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center mb-4">
+              <i class="fas fa-grip-lines mr-2 text-amber-400"></i> Lips & Jaw Anomalies
+            </h3>
+            <div class="relative h-48 flex items-center justify-center">
+              <canvas id="lipsJawChart" width="180" height="180"></canvas>
+              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span class="text-2xl font-bold text-emerald-400">85%</span>
+                <span class="text-[8px] text-gray-500 uppercase tracking-tighter">Normal Activity</span>
+              </div>
+            </div>
+            <div class="mt-4 space-y-2 text-[10px]">
+              <div class="flex justify-between items-center">
+                <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>Normal</span>
+                <span class="text-emerald-400 font-bold">85%</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-400"></span>Tensed</span>
+                <span class="text-rose-400 font-bold">15%</span>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <!-- Dual Section: Transcript and AI Reasoning -->
+        <div class="col-span-12 grid grid-cols-1 lg:grid-cols-2 gap-6 pb-8">
+          <!-- Full Text Transcript Section -->
+          <div class="glass transcript-section-card p-10">
+            <h3 class="text-sm font-black heading-font uppercase tracking-[0.2em] text-white mb-8 flex items-center">
+              <i class="fas fa-comment-dots mr-3 text-cyan-400"></i> Forensic Transcript
+            </h3>
+            <div class="transcript-box">
+              <div class="transcript-item">
+                <div class="flex justify-between mb-2">
+                  <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">Subject [02:14]</span>
+                  <span class="text-[9px] px-2 py-0.5 bg-rose-500/20 text-rose-400 rounded-full font-bold">Stress High</span>
+                </div>
+                <p class="text-sm text-gray-300 leading-relaxed italic">"I was never in the secure server room after 10 PM. The logs must be incorrect or tampered with by someone else."</p>
+              </div>
+              <div class="transcript-item">
+                <div class="flex justify-between mb-2">
+                  <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">Subject [05:42]</span>
+                  <span class="text-[9px] px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full font-bold">Baseline Normal</span>
+                </div>
+                <p class="text-sm text-gray-300 leading-relaxed italic">"I have been working for this company for 8 years and have never had a security violation before this incident."</p>
+              </div>
+              <div class="transcript-item">
+                <div class="flex justify-between mb-2">
+                  <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">Subject [08:30]</span>
+                  <span class="text-[9px] px-2 py-0.5 bg-rose-500/20 text-rose-400 rounded-full font-bold">Micro-tremor Alert</span>
+                </div>
+                <p class="text-sm text-gray-300 leading-relaxed italic">"I don't recognize the IP address used to access the database. I don't own any devices capable of that."</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Forensic Vocal Timeline Table -->
+      <div class="col-span-12 pb-4">
+        <article class="glass p-8 border-white/5">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xs font-black uppercase tracking-[0.25em] text-white flex items-center">
+              <i class="fas fa-list-ul mr-3 text-cyan-400"></i> Forensic Vocal Timeline Analysis
+            </h3>
+            <div class="flex items-center gap-4">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+                <span class="text-[9px] text-cyan-400 font-black uppercase tracking-widest">Live Deep-Scan</span>
+              </div>
+              <button onclick="downloadFrameData()" class="text-[9px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 px-3 py-1.5 rounded-lg border border-cyan-500/20 transition-all flex items-center gap-1">
+                <i class="fas fa-download"></i> Export CSV
+              </button>
+            </div>
+          </div>
+          <div class="voice-table-container custom-scrollbar">
+            <table class="voice-table">
+              <thead>
+                <tr>
+                  <th># SEG</th>
+                  <th>TIMESTAMP</th>
+                  <th>TRANSCRIPTION (WAV2VEC2)</th>
+                  <th>EMOTION STATE</th>
+                  <th>PITCH (F0)</th>
+                  <th>JITTER (%)</th>
+                  <th>CONFIDENCE</th>
+                  <th>STATUS</th>
+                </tr>
+              </thead>
+              <tbody id="frameTableBody"></tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <!-- Bottom Visualization: Neural Vision -->
+    <section class="px-4 space-y-4">
+      <div class="glass p-8 min-h-[450px] flex flex-col border-cyan-500/10 relative overflow-hidden group">
+        <div class="flex justify-between items-center mb-6">
+          <div class="flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 border border-cyan-500/20 glow-cyan">
+              <i class="fas fa-eye text-xl"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-black uppercase tracking-[0.3em] text-cyan-400">Forensic Video Output</h3>
+              <p class="text-[9px] text-gray-500 uppercase font-bold tracking-widest">Advanced Forensic Signal Visualization</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-3">
+            <button onclick="toggleFullScreen()" title="Maximize"
+              class="text-gray-500 hover:text-cyan-400 transition-all transform hover:scale-110 p-2 bg-white/5 rounded-xl border border-white/10"><i
+                class="fas fa-expand-arrows-alt text-sm"></i></button>
+            <button title="Download Signal"
+              class="text-gray-500 hover:text-cyan-400 transition-all transform hover:scale-110 p-2 bg-white/5 rounded-xl border border-white/10"><i
+                class="fas fa-download text-sm"></i></button>
+          </div>
+        </div>
+
+        <div class="flex-1 relative video-inner-wrap bg-black/60 rounded-2xl border border-white/5 overflow-hidden shadow-2xl">
+          <canvas id="neuralVisionCanvas" class="w-full h-full object-cover opacity-90"></canvas>
+          <div class="absolute inset-0 pointer-events-none border-[20px] border-cyan-500/5 group-hover:border-cyan-500/10 transition-all duration-500"></div>
+          <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent animate-pulse"></div>
+        </div>
+      </div>
+    </section>
+
+    <div id="bottomAnalysisSection" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Card 1: Output Context -->
+      <article class="glass p-8 space-y-5 border-white/5">
+        <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center">
+          <i class="fas fa-info-circle mr-2 text-cyan-400"></i> Output Context
+        </h3>
+        <div class="space-y-4">
+          <div class="flex justify-between items-center text-[11px]">
+            <span class="text-gray-400 font-medium">Source</span>
+            <span class="text-white font-mono bg-white/5 px-2 py-0.5 rounded" id="ctxSource">Live Feed #01</span>
+          </div>
+          <div class="flex justify-between items-center text-[11px]">
+            <span class="text-gray-400 font-medium">Resolution</span>
+            <span class="text-white font-mono" id="ctxResolution">1280x720 (HD)</span>
+          </div>
+          <div class="flex justify-between items-center text-[11px]">
+            <span class="text-gray-400 font-medium">Latency</span>
+            <span class="text-emerald-400 font-bold" id="ctxLatency">18ms</span>
+          </div>
+          <div class="flex justify-between items-center text-[11px]">
+            <span class="text-gray-400 font-medium">Capture Stat</span>
+            <span class="text-white font-mono" id="ctxStats">30 FPS • Stable</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 2: Description -->
+      <article class="glass p-8 space-y-5 border-rose-500/10">
+        <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center">
+          <i class="fas fa-align-left mr-2 text-rose-500"></i> Description
+        </h3>
+        <div class="space-y-4">
+          <p class="text-[11px] text-gray-300 leading-relaxed" id="descSummary">
+            Deception model detected high-frequency micro-tremors in vocal pitch matching rehearsed narrative clusters. Significant variance from truthful baseline noted during key disclosures.
+          </p>
+          <ul class="space-y-2 text-[10px] text-gray-400" id="descBullets">
+            <li class="flex items-center">
+              <span class="w-1 h-1 bg-rose-500 rounded-full mr-2"></span>
+              Rehearsed narrative pattern detected
+            </li>
+            <li class="flex items-center">
+              <span class="w-1 h-1 bg-rose-500 rounded-full mr-2"></span>
+              Pitch variance during key disclosures
+            </li>
+            <li class="flex items-center">
+              <span class="w-1 h-1 bg-rose-500 rounded-full mr-2"></span>
+              Baseline deviation > 15%
+            </li>
+          </ul>
+          <div class="pt-2">
+            <span class="px-3 py-1.5 bg-rose-500/10 border border-rose-500/20 text-rose-500 text-[9px] font-bold uppercase rounded-lg shadow-[0_0_15px_rgba(244,63,94,0.1)]" id="descVerdictBadge">
+              Verdict: High Lying Risk
+            </span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 3: Analysis % -->
+      <article class="glass p-8 space-y-8 border-cyan-500/10">
+        <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center">
+          <i class="fas fa-chart-pie mr-2 text-cyan-400"></i> Analysis %
+        </h3>
+        <div class="space-y-8">
+          <div class="space-y-3">
+            <div class="flex justify-between text-[10px] font-bold uppercase tracking-wider">
+              <span class="text-gray-400">Primary Risk Score</span>
+              <span class="text-rose-500 text-sm" id="analysisPrimaryVal">82%</span>
+            </div>
+            <div class="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
+              <div class="h-full bg-rose-500 rounded-full shadow-[0_0_12px_rgba(244,63,94,0.4)] transition-all duration-1000" style="width: 82%" id="analysisPrimaryBar"></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 pt-2">
+            <div class="text-center space-y-3">
+              <div class="relative w-20 h-20 mx-auto group">
+                <canvas id="radialMetricA" width="80" height="80"></canvas>
+                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span class="text-xs font-black text-white" id="valMetricA">45%</span>
+                </div>
+              </div>
+              <span class="text-[9px] text-gray-500 uppercase font-black tracking-[0.2em] group-hover:text-cyan-400 transition-colors">Vocal Jitter</span>
+            </div>
+            <div class="text-center space-y-3">
+              <div class="relative w-20 h-20 mx-auto group">
+                <canvas id="radialMetricB" width="80" height="80"></canvas>
+                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span class="text-xs font-black text-white" id="valMetricB">32%</span>
+                </div>
+              </div>
+              <span class="text-[9px] text-gray-500 uppercase font-black tracking-[0.2em] group-hover:text-rose-500 transition-colors">Neural Stress</span>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <!-- Save Modal -->
+  <div id="saveModal"
+    class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[999] hidden flex items-center justify-center opacity-0 transition-all duration-300">
+    <div class="bg-[#0b121f] border border-white/10 p-10 rounded-3xl w-full max-w-lg transform scale-95 transition-all duration-300 shadow-2xl">
+      <h2 class="text-2xl font-bold heading-font text-white mb-2">
+        Save Session Record
+      </h2>
+      <p class="text-xs text-gray-400 mb-8">
+        Finalize and encrypt the session data for permanent storage.
+      </p>
+
+      <div class="space-y-5">
+        <div class="space-y-2">
+          <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Subject Identifier</label>
+          <input type="text" placeholder="Enter name or ID..."
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-400 focus:outline-none transition-all" />
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Case Code</label>
+            <input type="text" value="#DEC-XQ-92"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-400 focus:outline-none" />
+          </div>
+          <div class="space-y-2">
+            <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Storage Status</label>
+            <input type="text" value="Secure Cloud" readonly
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-gray-600" />
+          </div>
+        </div>
+        <div class="space-y-2">
+          <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Session Summary</label>
+          <textarea placeholder="Critical observations..." rows="3"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-400 focus:outline-none resize-none"></textarea>
+        </div>
+      </div>
+
+      <div class="mt-10 flex flex-col space-y-3">
+        <button class="w-full py-4 bg-cyan-500 text-white text-xs font-bold uppercase rounded-xl shadow-lg shadow-cyan-500/30 transition-all font-bold" onclick="saveData()">
+          Save Record
+        </button>
+        <div class="flex space-x-3">
+          <button class="flex-1 py-3 bg-white/5 hover:bg-white/10 text-[10px] font-bold uppercase rounded-xl transition-all text-gray-400" onclick="closeSaveModal()">
+            Continue Session
+          </button>
+          <button class="flex-1 py-3 bg-red-500/10 hover:bg-red-500/20 text-[10px] font-bold uppercase rounded-xl transition-all text-red-500 border border-red-500/20" onclick="discardSession()">
+            Discard & Reset
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const body = document.body;
+
+    // Charts Initialization
+    Chart.defaults.color = "#64748b";
+    Chart.defaults.font.family = "'Inter', sans-serif";
+
+    // 1. Emotion (Donut) - only init if canvas exists
+    const emotionChartEl = document.getElementById("emotionChart");
+    if (emotionChartEl) new Chart(emotionChartEl.getContext("2d"), {
+      type: "doughnut",
+      data: {
+        labels: ["Neutral", "Nervous", "Fear", "Angry"],
+        datasets: [
+          {
+            data: [45, 32, 12, 11],
+            backgroundColor: ["#06b6d4", "#f43f5e", "#f59e0b", "#a855f7"],
+            borderWidth: 0,
+            borderRadius: 8,
+            spacing: 8,
+          },
+        ],
+      },
+      options: {
+        cutout: "82%",
+        plugins: { legend: { display: false } },
+        responsive: true,
+        maintainAspectRatio: false,
+      },
+    });
+
+    // 2. Radial Metrics for Analysis % Card
+    let radialChartA, radialChartB;
+    function initAnalysisCharts() {
+      const ctxRadialA = document.getElementById("radialMetricA");
+      if (ctxRadialA) {
+        radialChartA = new Chart(ctxRadialA.getContext("2d"), {
+          type: "doughnut",
+          data: {
+            labels: ["Value", "Remaining"],
+            datasets: [
+              {
+                data: [45, 55],
+                backgroundColor: [
+                  "#06b6d4",
+                  body.classList.contains("light-mode")
+                    ? "rgba(0, 118, 214, 0.1)"
+                    : "rgba(255, 255, 255, 0.05)",
+                ],
+                borderWidth: 0,
+                cutout: "80%",
+                borderRadius: 20,
+              },
+            ],
+          },
+          options: {
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            responsive: true,
+            maintainAspectRatio: false,
+            circumference: 360,
+            rotation: 0,
+          },
+        });
+      }
+
+      const ctxRadialB = document.getElementById("radialMetricB");
+      if (ctxRadialB) {
+        radialChartB = new Chart(ctxRadialB.getContext("2d"), {
+          type: "doughnut",
+          data: {
+            labels: ["Value", "Remaining"],
+            datasets: [
+              {
+                data: [32, 68],
+                backgroundColor: [
+                  "#f43f5e",
+                  body.classList.contains("light-mode")
+                    ? "rgba(0, 118, 214, 0.1)"
+                    : "rgba(255, 255, 255, 0.05)",
+                ],
+                borderWidth: 0,
+                cutout: "80%",
+                borderRadius: 20,
+              },
+            ],
+          },
+          options: {
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            responsive: true,
+            maintainAspectRatio: false,
+            circumference: 360,
+            rotation: 0,
+          },
+        });
+      }
+    }
+
+    // --- Neural Vision Output Logic ---
+    const neuralCanvas = document.getElementById("neuralVisionCanvas");
+    const neuralCtx = neuralCanvas ? neuralCanvas.getContext("2d") : null;
+
+    function startNeuralVision() {
+      const video = document.getElementById("webcam");
+      if (!video || !neuralCtx) return;
+
+      function renderVision() {
+        if (!video.srcObject && !video.src) {
+          neuralCtx.fillStyle = '#05080f';
+          neuralCtx.fillRect(0, 0, neuralCanvas.width, neuralCanvas.height);
+          requestAnimationFrame(renderVision);
+          return;
+        }
+        if (video.paused || video.ended) {
+          requestAnimationFrame(renderVision);
+          return;
+        }
+
+        if (neuralCanvas.width !== video.videoWidth && video.videoWidth > 0) {
+          neuralCanvas.width = video.videoWidth;
+          neuralCanvas.height = video.videoHeight;
+        }
+
+        if (window.isAnalysisRunning) {
+          neuralCtx.save();
+          if (video.style.transform.includes("scaleX(-1)")) {
+            neuralCtx.translate(neuralCanvas.width, 0);
+            neuralCtx.scale(-1, 1);
+          }
+          neuralCtx.drawImage(video, 0, 0, neuralCanvas.width, neuralCanvas.height);
+          neuralCtx.restore();
+
+          neuralCtx.globalCompositeOperation = 'hard-light';
+          neuralCtx.fillStyle = 'rgba(0, 163, 255, 0.1)';
+          neuralCtx.fillRect(0, 0, neuralCanvas.width, neuralCanvas.height);
+          neuralCtx.globalCompositeOperation = 'source-over';
+        } else {
+          neuralCtx.fillStyle = '#05080f';
+          neuralCtx.fillRect(0, 0, neuralCanvas.width, neuralCanvas.height);
+
+          const centerX = neuralCanvas.width / 2;
+          const centerY = neuralCanvas.height / 2;
+          neuralCtx.font = "8px 'Inter', sans-serif";
+          neuralCtx.fillStyle = "rgba(0, 219, 255, 0.2)";
+          neuralCtx.textAlign = "center";
+          neuralCtx.fillText("AWAITING_SIGNAL_LOCK...", centerX, centerY);
+        }
+
+        requestAnimationFrame(renderVision);
+      }
+      renderVision();
+    }
+
+    // Global State
+    var mediaStream = null;
+
+    async function toggleCamera() {
+      const off = document.getElementById("camOffState");
+      const on = document.getElementById("camOnState");
+      const btn = document.getElementById("camBtn");
+      const toast = document.getElementById("videoToast");
+      const videoElement = document.getElementById("webcam");
+      const cameraSelect = document.getElementById("cameraSelect");
+      const micSelect = document.getElementById("microphoneSelect");
+
+      if (on.classList.contains("hidden")) {
+        try {
+          videoElement.removeAttribute("controls");
+
+          if (mediaStream) {
+            mediaStream.getTracks().forEach(track => {
+              track.stop();
+              console.log(`Stopped existing ${track.kind} track`);
+            });
+            mediaStream = null;
+          }
+
+          let cameraId = cameraSelect.value;
+          const isValidCam = cameraId && cameraId.length > 10 && !cameraId.includes("Loading") && !cameraId.includes("Permission");
+
+          const primaryConstraints = isValidCam ?
+            { deviceId: { exact: cameraId }, width: { ideal: 1280 }, height: { ideal: 720 } } :
+            { width: { ideal: 1280 }, height: { ideal: 720 } };
+
+          try {
+            mediaStream = await navigator.mediaDevices.getUserMedia({ video: primaryConstraints });
+            console.log("Video track acquired (Primary choice)");
+          } catch (vErr) {
+            console.warn("Primary video access failed, trying fallback...", vErr);
+            try {
+              mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+              console.log("Video track acquired (Fallback mode)");
+            } catch (fallbackErr) {
+              console.error("All video access attempts failed:", fallbackErr);
+              throw new Error("Camera access denied. Please ensure your camera is not in use by another app.");
+            }
+          }
+
+          try {
+            let micId = micSelect.value;
+            const isValidMic = micId && micId.length > 10 && !micId.includes("Loading") && !micId.includes("Permission");
+
+            if (mediaStream.getAudioTracks().length === 0) {
+              const audioConstraints = isValidMic ? { deviceId: { exact: micId } } : true;
+              const audioStream = await navigator.mediaDevices.getUserMedia({
+                audio: audioConstraints,
+                video: false
+              });
+              audioStream.getAudioTracks().forEach(track => mediaStream.addTrack(track));
+              console.log("Audio track added to stream");
+            }
+          } catch (aErr) {
+            console.warn("Microphone access failed. Continuing with video only:", aErr);
+          }
+
+          videoElement.srcObject = mediaStream;
+          videoElement.src = "";
+          videoElement.play();
+
+          off.style.opacity = "0";
+          setTimeout(() => {
+            off.classList.add("hidden");
+            on.classList.remove("hidden");
+            btn.classList.add("active");
+            on.style.opacity = "1";
+
+            const hasAudio = mediaStream.getAudioTracks().length > 0;
+            toast.querySelector("div").innerText = hasAudio ? "Scanner & Voice Online" : "Scanner Online (Mic Offline)";
+            toast.classList.remove("opacity-0", "translate-y-4");
+            toast.classList.add("opacity-1", "translate-y-0");
+            setTimeout(() => {
+              toast.classList.add("opacity-0", "translate-y-4");
+            }, 2000);
+          }, 300);
+
+        } catch (err) {
+          console.error("Critical hardware access error:", err);
+          alert(err.message || "Could not access hardware.");
+        }
+      } else {
+        if (mediaStream) {
+          mediaStream.getTracks().forEach((track) => track.stop());
+          mediaStream = null;
+        }
+        window.isAnalysisRunning = false;
+        videoElement.srcObject = null;
+        videoElement.src = "";
+
+        on.classList.add("hidden");
+        off.classList.remove("hidden");
+        btn.classList.remove("active");
+        off.style.opacity = "1";
+      }
+    }
+
+    function clearVault() {
+      const video = document.getElementById("webcam");
+      const off = document.getElementById("camOffState");
+      const on = document.getElementById("camOnState");
+      const btn = document.getElementById("camBtn");
+
+      if (mediaStream) {
+        mediaStream.getTracks().forEach((track) => track.stop());
+        mediaStream = null;
+      }
+      window.isAnalysisRunning = false;
+
+      video.srcObject = null;
+      video.src = "";
+      video.removeAttribute("controls");
+
+      on.classList.add("hidden");
+      off.classList.remove("hidden");
+      btn.classList.remove("active");
+      off.style.opacity = "1";
+    }
+
+    function toggleFullScreen() {
+      const container = document.querySelector(".video-container");
+      if (!document.fullscreenElement) {
+        container.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    function finalizeAnalysis() {
+      Loader.show("Processing Evidence");
+      setTimeout(() => {
+        Loader.hide();
+        const bottomAnalysis = document.getElementById("bottomAnalysisSection");
+        if (bottomAnalysis) {
+          bottomAnalysis.classList.remove("hidden");
+          bottomAnalysis.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 2500);
+    }
+
+    function openSaveModal() {
+      const m = document.getElementById("saveModal");
+      m.classList.remove("hidden");
+      setTimeout(() => {
+        m.classList.remove("opacity-0");
+        m.querySelector("div").classList.remove("scale-95");
+        m.querySelector("div").classList.add("scale-100");
+      }, 10);
+    }
+
+    function closeSaveModal() {
+      const m = document.getElementById("saveModal");
+      m.classList.add("opacity-0");
+      m.querySelector("div").classList.add("scale-95");
+      setTimeout(() => m.classList.add("hidden"), 300);
+    }
+
+    let isRecording = false;
+    let mediaRecorder;
+    let recordedChunks = [];
+    let startTime;
+    let timerInterval;
+
+    function updateTimer() {
+      if (!startTime) return;
+      const now = new Date();
+      const diff = new Date(now - startTime);
+      const h = String(diff.getUTCHours()).padStart(2, "0");
+      const m = String(diff.getUTCMinutes()).padStart(2, "0");
+      const s = String(diff.getUTCSeconds()).padStart(2, "0");
+      document.getElementById("recordingTimer").innerText = `${h}:${m}:${s}`;
+    }
+
+    function handleSessionToggle() {
+      const btn = document.getElementById("sessionBtn");
+      const pauseBtn = document.getElementById("pauseBtn");
+      const recIndicator = document.getElementById("recIndicator");
+      if (!isRecording) {
+        if (!mediaStream) {
+          alert("Please turn on the camera first.");
+          return;
+        }
+
+        const streamAudioTracks = mediaStream.getAudioTracks();
+        if (streamAudioTracks.length === 0) {
+          alert("No microphone detected! Please select a microphone and restart the camera.");
+          return;
+        }
+
+        recordedChunks = [];
+
+        const options = MediaRecorder.isTypeSupported("video/webm;codecs=vp8,opus") ?
+          { mimeType: "video/webm;codecs=vp8,opus" } : {};
+
+        console.log("Starting recording with mimeType:", options.mimeType);
+
+        mediaRecorder = new MediaRecorder(mediaStream, options);
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            recordedChunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.start(1000);
+
+        isRecording = true;
+        btn.innerHTML = '<i class="fas fa-stop-circle mr-2"></i> End Session';
+        btn.classList.remove("bg-cyan-600", "shadow-cyan-500/20");
+        btn.classList.add("bg-red-600", "shadow-red-500/20");
+
+        if (pauseBtn) pauseBtn.classList.remove("hidden");
+        if (recIndicator) recIndicator.classList.remove("hidden");
+
+        startTime = new Date();
+        timerInterval = setInterval(updateTimer, 1000);
+
+        const toast = document.getElementById("videoToast");
+        toast.querySelector("div").innerText = "Recording Started";
+        toast.classList.remove("opacity-0", "translate-y-4");
+        toast.classList.add("opacity-1", "translate-y-0");
+        setTimeout(() => toast.classList.add("opacity-0", "translate-y-4"), 1500);
+      } else {
+        mediaRecorder.stop();
+        if (mediaStream) {
+          mediaStream.getTracks().forEach((track) => track.stop());
+          mediaStream = null;
+        }
+        if (pauseBtn) pauseBtn.classList.add("hidden");
+        if (recIndicator) recIndicator.classList.add("hidden");
+        clearInterval(timerInterval);
+        openSaveModal();
+      }
+    }
+
+    function togglePause() {
+      const pauseBtn = document.getElementById("pauseBtn");
+      const recIndicator = document.getElementById("recIndicator");
+
+      if (mediaRecorder.state === "recording") {
+        mediaRecorder.pause();
+        pauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+        pauseBtn.classList.add("bg-amber-500", "text-white");
+        if (recIndicator)
+          recIndicator.querySelector("span").classList.remove("animate-pulse");
+        clearInterval(timerInterval);
+      } else if (mediaRecorder.state === "paused") {
+        mediaRecorder.resume();
+        pauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        pauseBtn.classList.remove("bg-amber-500", "text-white");
+        if (recIndicator)
+          recIndicator.querySelector("span").classList.add("animate-pulse");
+        timerInterval = setInterval(updateTimer, 1000);
+      }
+    }
+
+    async function saveData() {
+      const subjectId = document.querySelector('#saveModal input[placeholder="Enter name or ID..."]').value || "Unknown_Subject";
+      const filename = `session_${subjectId}_${new Date().getTime()}.webm`;
+
+      const saveBtn = document.querySelector('#saveModal button[onclick="saveData()"]');
+      const originalText = saveBtn.innerText;
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+      closeSaveModal();
+      Loader.show("Encrypting & Saving to Vault...");
+
+      try {
+        const blob = new Blob(recordedChunks, { type: "video/webm" });
+        const size = blob.size;
+        const sizeMB = (size / (1024 * 1024)).toFixed(1) + " MB";
+
+        const initResult = await eel.initiate_upload(filename, sizeMB, "video", true)();
+        if (!initResult.success) throw new Error(initResult.message);
+
+        const uploadId = initResult.data.upload_id;
+        const CHUNK_SIZE = 1024 * 1024;
+        let offset = 0;
+
+        while (offset < size) {
+          const chunk = blob.slice(offset, offset + CHUNK_SIZE);
+          const reader = new FileReader();
+
+          await new Promise((resolve, reject) => {
+            reader.onload = async (e) => {
+              try {
+                const result = await eel.append_upload_chunk(uploadId, e.target.result)();
+                if (!result.success) reject(new Error(result.message));
+                resolve();
+              } catch (err) {
+                reject(err);
+              }
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(chunk);
+          });
+
+          offset += CHUNK_SIZE;
+          const progress = Math.min(100, Math.round((offset / size) * 100));
+          const loaderText = document.querySelector("#globalLoader p");
+          if (loaderText) loaderText.innerText = `Encrypting & Saving... ${progress}%`;
+        }
+
+        const finalResult = await eel.finalize_upload(uploadId)();
+
+        if (finalResult.success) {
+          Loader.hide();
+
+          const toast = document.getElementById("videoToast");
+          toast.querySelector("div").innerText = "Session Saved & Secured";
+          toast.querySelector("div").className = "px-6 py-2 bg-emerald-500 text-white text-[10px] font-bold uppercase rounded-full shadow-lg shadow-emerald-500/40";
+          toast.classList.remove("opacity-0", "translate-y-4");
+          toast.classList.add("opacity-1", "translate-y-0");
+
+          const video = document.getElementById("webcam");
+          video.srcObject = null;
+          video.src = finalResult.data && finalResult.data.filepath ? finalResult.data.filepath : `../recordings/${filename}`;
+          video.setAttribute("controls", "true");
+          video.muted = false;
+          video.style.transform = "scaleX(-1)";
+          video.load();
+          video.play();
+
+          const off = document.getElementById("camOffState");
+          const on = document.getElementById("camOnState");
+          off.classList.add("hidden");
+          on.classList.remove("hidden");
+
+          const analyseBtn = document.getElementById("analyseBtn");
+          if (analyseBtn) analyseBtn.classList.remove("hidden");
+
+          setTimeout(() => toast.classList.add("opacity-0", "translate-y-4"), 2500);
+        } else {
+          throw new Error(finalResult.message);
+        }
+
+        resetUIState();
+
+        setTimeout(() => {
+          saveBtn.disabled = false;
+          saveBtn.innerText = originalText;
+        }, 1000);
+      } catch (error) {
+        console.error("Save error:", error);
+        Loader.hide();
+        const toast = document.getElementById("videoToast");
+        toast.querySelector("div").innerText = "Error: " + error.message;
+        toast.querySelector("div").className = "px-6 py-2 bg-red-500 text-white text-[10px] font-bold uppercase rounded-full shadow-lg shadow-red-500/40";
+        toast.classList.remove("opacity-0", "translate-y-4");
+        toast.classList.add("opacity-1", "translate-y-0");
+        setTimeout(() => toast.classList.add("opacity-0", "translate-y-4"), 4000);
+
+        saveBtn.disabled = false;
+        saveBtn.innerText = originalText;
+        resetUIState();
+      }
+    }
+
+    function discardSession() {
+      if (confirm("Are you sure? This will delete the current recording session data.")) {
+        closeSaveModal();
+        recordedChunks = [];
+        if (mediaStream) {
+          mediaStream.getTracks().forEach((track) => track.stop());
+          mediaStream = null;
+        }
+        resetUIState();
+
+        const toast = document.getElementById("videoToast");
+        toast.querySelector("div").innerText = "Session Discarded";
+        toast.querySelector("div").className = "px-6 py-2 bg-red-500 text-white text-[10px] font-bold uppercase rounded-full shadow-lg shadow-red-500/40";
+        toast.classList.remove("opacity-0", "translate-y-4");
+        toast.classList.add("opacity-1", "translate-y-0");
+        setTimeout(() => toast.classList.add("opacity-0", "translate-y-4"), 2500);
+      }
+    }
+
+    function resetUIState() {
+      const btn = document.getElementById("sessionBtn");
+      const pauseBtn = document.getElementById("pauseBtn");
+      isRecording = false;
+      btn.innerHTML = '<i class="fas fa-play mr-2"></i> Start Recording';
+      btn.classList.add("bg-cyan-600", "shadow-cyan-500/20");
+      btn.classList.remove("bg-red-600", "shadow-red-500/20");
+      document.getElementById("recordingTimer").innerText = "00:00:00";
+      if (timerInterval) clearInterval(timerInterval);
+      document.getElementById("recIndicator").classList.add("hidden");
+      if (pauseBtn) {
+        pauseBtn.classList.add("hidden");
+        pauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        pauseBtn.classList.remove("bg-amber-500", "text-white");
+      }
+    }
+
+    // Populate vocal timeline table
+    function populateFrameTable() {
+      const tbody = document.getElementById('frameTableBody');
+      if (!tbody) return;
+      const segments = [
+        { time: "00:00:02", text: "Please state your name and Unit ID.", emotion: "Neutral", pitch: "185", jitter: "0.12", conf: "99", status: "STABLE" },
+        { time: "00:00:05", text: "Officer Hamza, Unit ID 7821-X.", emotion: "Calm", pitch: "192", jitter: "0.15", conf: "98", status: "VERIFIED" },
+        { time: "00:00:09", text: "I was present at the coordinates indicated.", emotion: "Stress", pitch: "245", jitter: "0.85", conf: "92", status: "ANOMALY" },
+        { time: "00:00:14", text: "The situation was under control until the breach.", emotion: "Anger", pitch: "298", jitter: "1.24", conf: "94", status: "HIGH_STRESS" },
+        { time: "00:00:18", text: "Authorization was granted by the central core.", emotion: "Neutral", pitch: "210", jitter: "0.34", conf: "97", status: "STABLE" },
+        { time: "00:00:22", text: "End of report summary for unit.", emotion: "Calm", pitch: "188", jitter: "0.18", conf: "99", status: "VERIFIED" }
+      ];
+      tbody.innerHTML = segments.map((s, i) => `
+        <tr>
+          <td class="font-mono text-cyan-500 font-bold">#SEG_${String(i+1).padStart(3,'0')}</td>
+          <td class="font-mono text-gray-500">${s.time}</td>
+          <td class="text-white italic">"${s.text}"</td>
+          <td><span class="status-pill status-pill-${s.emotion.toLowerCase()}">${s.emotion}</span></td>
+          <td class="font-mono">${s.pitch} Hz</td>
+          <td class="font-mono">${s.jitter} %</td>
+          <td class="font-bold text-cyan-400">${s.conf}%</td>
+          <td class="text-[9px] font-black uppercase tracking-tighter ${s.status==='ANOMALY'||s.status==='HIGH_STRESS'?'text-rose-500':'text-emerald-500'}">${s.status}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Download frame data as CSV
+    function downloadFrameData() {
+      const csvContent = "data:text/csv;charset=utf-8," + 
+        "Segment,Timestamp,Transcription,Emotion,Pitch,Jitter,Confidence,Status\n" +
+        Array.from(document.querySelectorAll('#frameTableBody tr')).map(row => {
+          return Array.from(row.querySelectorAll('td')).map(td => {
+            let text = td.innerText.replace(/"/g, '""');
+            if (text.includes(',')) text = `"${text}"`;
+            return text;
+          }).join(',');
+        }).join('\n');
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "forensic_vocal_timeline.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Initialize emotion analysis components
+    function initEmotionAnalysis() {
+      populateFrameTable();
+    }
+
+    // Circular pie charts
+    let emotionDistChart, eyeMovChart, lipsJawChartInst;
+
+    function initCircularCharts() {
+      const emotionCtx = document.getElementById('emotionDistributionChart');
+      if (emotionCtx) {
+        emotionDistChart = new Chart(emotionCtx.getContext('2d'), {
+          type: 'doughnut',
+          data: { labels: ['Neutral','Anger','Fear'], datasets: [{ data:[60,25,15], backgroundColor:['#34d399','#fbbf24','#f87171'], borderWidth:0, cutout:'82%', borderRadius:8 }] },
+          options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} } }
+        });
+      }
+      const eyeCtx = document.getElementById('eyeMovementChart');
+      if (eyeCtx) {
+        eyeMovChart = new Chart(eyeCtx.getContext('2d'), {
+          type: 'doughnut',
+          data: { labels: ['Steady Gaze','Rapid Blinking'], datasets: [{ data:[70,30], backgroundColor:['#22d3ee','#fbbf24'], borderWidth:0, cutout:'82%', borderRadius:8 }] },
+          options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} } }
+        });
+      }
+      const jawCtx = document.getElementById('lipsJawChart');
+      if (jawCtx) {
+        lipsJawChartInst = new Chart(jawCtx.getContext('2d'), {
+          type: 'doughnut',
+          data: { labels: ['Normal','Tensed'], datasets: [{ data:[85,15], backgroundColor:['#34d399','#f43f5e'], borderWidth:0, cutout:'82%', borderRadius:8 }] },
+          options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} } }
+        });
+      }
+    }
+
+    function toggleSidebar() {
+      body.classList.toggle("sidebar-collapsed");
+      localStorage.setItem("sidebarCollapsed", body.classList.contains("sidebar-collapsed"));
+    }
+
+    // Populate Camera and Microphone Sources
+    async function populateDevices() {
+      const camSelect = document.getElementById("cameraSelect");
+      const micSelect = document.getElementById("microphoneSelect");
+
+      camSelect.innerHTML = "<option>Loading...</option>";
+      micSelect.innerHTML = "<option>Loading...</option>";
+
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+          camSelect.innerHTML = '<option value="">Permission needed</option>';
+          micSelect.innerHTML = '<option value="">Permission needed</option>';
+          return;
+        }
+
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        camSelect.innerHTML = "";
+        micSelect.innerHTML = "";
+
+        const videoDevices = devices.filter((d) => d.kind === "videoinput");
+        videoDevices.forEach((device, index) => {
+          const label = (device.label || `Camera ${index + 1}`).toLowerCase();
+          if (label.includes("virtual") || label.includes("fliflik")) return;
+
+          const option = document.createElement("option");
+          option.value = device.deviceId;
+          option.text = device.label || `Camera ${index + 1}`;
+          camSelect.appendChild(option);
+        });
+        if (videoDevices.length === 0)
+          camSelect.innerHTML = '<option value="">No cameras found</option>';
+
+        const audioDevices = devices.filter((d) => d.kind === "audioinput");
+        audioDevices.forEach((device, index) => {
+          const label = (device.label || `Microphone ${index + 1}`).toLowerCase();
+          if (label.includes("virtual") || label.includes("fliflik") || label.includes("stereo mix")) return;
+
+          const option = document.createElement("option");
+          option.value = device.deviceId;
+          option.text = device.label || `Microphone ${index + 1}`;
+          micSelect.appendChild(option);
+        });
+        if (audioDevices.length === 0)
+          micSelect.innerHTML = '<option value="">No microphones found</option>';
+
+        try {
+          const result = await eel.load_preferences()();
+          if (result.success && result.preferences) {
+            if (result.preferences.default_camera) {
+              const exists = videoDevices.some((d) => d.deviceId === result.preferences.default_camera);
+              if (exists) camSelect.value = result.preferences.default_camera;
+            }
+            if (result.preferences.default_mic) {
+              const exists = audioDevices.some((d) => d.deviceId === result.preferences.default_mic);
+              if (exists) micSelect.value = result.preferences.default_mic;
+            }
+
+            const v = document.getElementById("webcam");
+            if (v) {
+              const b = result.preferences.brightness || 50;
+              const c = result.preferences.contrast || 50;
+              const s = result.preferences.saturation || 50;
+              const mirror = result.preferences.mirror_camera || false;
+
+              const bVal = 0.5 + b / 100;
+              const cVal = 0.5 + c / 100;
+              const sVal = 0.5 + s / 100;
+
+              v.style.filter = `brightness(${bVal}) contrast(${cVal}) saturate(${sVal})`;
+              v.style.transform = mirror ? "scaleX(-1)" : "scaleX(1)";
+
+              let gridOverlay = document.getElementById("liveGridOverlay");
+              if (result.preferences.grid_overlay) {
+                if (!gridOverlay) {
+                  const parent = v.parentElement;
+                  gridOverlay = document.createElement("div");
+                  gridOverlay.id = "liveGridOverlay";
+                  gridOverlay.className = "absolute inset-0 pointer-events-none z-10";
+                  gridOverlay.style.backgroundImage = `linear-gradient(rgba(0, 219, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 219, 255, 0.1) 1px, transparent 1px)`;
+                  gridOverlay.style.backgroundSize = "33.3% 33.3%";
+                  parent.appendChild(gridOverlay);
+                }
+              } else if (gridOverlay) {
+                gridOverlay.remove();
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Pref load error:", e);
+        }
+      } catch (err) {
+        console.error("Error enumerating devices:", err);
+        camSelect.innerHTML = "<option>Error</option>";
+        micSelect.innerHTML = "<option>Error</option>";
+      }
+    }
+
+    function openVault() {
+      VaultComponent.open((item) => {
+        if (item.type !== "video") {
+          alert("Please select a video file for Live Check analysis.");
+          return;
+        }
+
+        const video = document.getElementById("webcam");
+        const off = document.getElementById("camOffState");
+        const on = document.getElementById("camOnState");
+        const btn = document.getElementById("camBtn");
+
+        if (mediaStream) {
+          mediaStream.getTracks().forEach((track) => track.stop());
+          mediaStream = null;
+        }
+
+        video.srcObject = null;
+        video.src = item.filepath;
+        video.setAttribute("controls", "true");
+        video.style.transform = "none";
+
+        document.querySelector("h1").innerHTML = item.filename + ' <span class="text-cyan-400 font-normal">| PIPELINE LOADED</span>';
+
+        off.classList.add("hidden");
+        on.classList.remove("hidden");
+        btn.classList.add("active");
+        on.style.opacity = "1";
+
+        const analyseBtn = document.getElementById("analyseBtn");
+        if (analyseBtn) analyseBtn.classList.remove("hidden");
+
+        Loader.show("Loading Evidence");
+        video.oncanplay = () => {
+          Loader.hide();
+          video.play();
+          startNeuralVision();
+        };
+      });
+    }
+
+    // Initial Load
+    document.addEventListener("DOMContentLoaded", async () => {
+      const result = await eel.get_current_user()();
+      const user = result.success && result.data ? result.data : null;
+
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      const activeMember = document.querySelector(".active-member-info span.ml-1");
+      if (activeMember) {
+        activeMember.textContent = `${user.firstName} ${user.lastName} • Unit #${user.username.toUpperCase()}`;
+      }
+
+      populateDevices();
+      initAnalysisCharts();
+      initEmotionAnalysis();
+      initCircularCharts();
+
+      startNeuralVision();
+
+      const ctxTruth = document.getElementById('truthChart');
+      if (ctxTruth) {
+        const isLight = document.body.classList.contains('light-mode');
+        new Chart(ctxTruth.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: ['START', '2m', '4m', '6m', '8m', '10m', 'END'],
+            datasets: [{
+              label: 'Deception Level',
+              data: [10, 45, 30, 85, 92, 78, 80],
+              borderColor: '#f43f5e',
+              backgroundColor: 'rgba(244, 63, 94, 0.1)',
+              borderWidth: 4,
+              tension: 0.4,
+              fill: true,
+              pointBackgroundColor: '#f43f5e',
+              pointRadius: 6,
+              pointHoverRadius: 8
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 100,
+                grid: { color: isLight ? 'rgba(0,118,214,0.1)' : 'rgba(255,255,255,0.05)' },
+                ticks: { color: isLight ? '#475569' : '#666', font: { family: 'Inter', weight: 'bold' } }
+              },
+              x: {
+                grid: { display: false },
+                ticks: { color: isLight ? '#475569' : '#666', font: { family: 'Inter', weight: 'bold' } }
+              }
+            }
+          }
+        });
+      }
+    });
+
+    function closeApp() {
+      if (confirm("Are you sure you want to logout?")) {
+        window.location.href = "login.html";
+      }
+    }
+  </script>
+</body>
+
+</html>

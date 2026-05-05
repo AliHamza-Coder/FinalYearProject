@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deceptron - Settings</title>
+    <link rel="icon" href="../assets/images/Eye icon.png">
+    <link rel="stylesheet" href="../styles/output.css">
+    <link rel="stylesheet" href="../vendor/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="../styles/sidebar.css">
+    <style>
+        :root {
+            --primary-blue: #2563eb; /* Professional Royal Blue */
+            --accent-cyan: #0ea5e9; /* Sky Blue */
+            --accent-rose: #ef4444;
+            --sidebar-width: 260px;
+
+            /* Vibrant University Pro Theme */
+            --bg-main: #0f172a; /* Deep Navy */
+            --text-main: #ffffff;
+            --text-dim: #94a3b8;
+            --sidebar-bg: #0f172a;
+            --card-bg: #1e293b; /* Solid Professional Surface */
+            --border-subtle: #334155; /* Visible Slate Border */
+            --input-bg: #0f172a;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.2); }
+            50% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.6); }
+            100% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.2); }
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            overflow: hidden;
+            width: 100vw;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.05) 0, transparent 50%), 
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.05) 0, transparent 50%);
+            background-attachment: fixed;
+        }
+
+
+        .heading-font { font-family: 'Orbitron', sans-serif; }
+
+        button, a, select, input[type="range"], input[type="checkbox"], .nav-item, .cursor-pointer {
+            cursor: pointer !important;
+        }
+
+        .glass {
+            background: var(--card-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-content {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .setting-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .setting-card:hover {
+            border-color: var(--primary-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Preview Area */
+        .preview-area {
+            background: #05080f;
+            border-radius: 2.5rem;
+            overflow: hidden;
+            width: 100%;
+            aspect-ratio: 16/9;
+            position: relative;
+            border: 4px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        #webcamPreview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            display: none;
+        }
+
+        .range-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 118, 214, 0.05);
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #ffffff;
+            border: 4px solid var(--primary-blue);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 118, 214, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .range-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(0, 118, 214, 0.3);
+        }
+
+        /* Dropdowns */
+        select {
+            -webkit-appearance: none;
+            appearance: none;
+            background-color: var(--input-bg);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2300DBFF'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-position: right 1rem center;
+            background-repeat: no-repeat;
+            background-size: 1rem;
+            border: 2px solid var(--border-subtle);
+            border-radius: 1.25rem;
+            padding: 1rem 1.5rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #ffffff !important; /* Force white text */
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        select option {
+            background-color: #1a365d;
+            color: #ffffff;
+            padding: 10px;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 219, 255, 0.2);
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 118, 214, 0.1); border-radius: 10px; }
+
+        .btn-primary {
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            color: var(--accent-cyan);
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-blue);
+            color: #ffffff;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            border: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary-blue);
+            background: var(--primary-blue);
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Component Container -->
+    <script type="text/javascript" src="/eel.js"></script>
+    <script src="../js/components/sidebar.js"></script>
+    <script>
+        initSidebar();
+    </script>
+
+    <main class="main-content">
+        <header class="p-8 pb-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-bold heading-font text-white tracking-tight">System Settings</h1>
+                <p class="text-sm text-dim">Configure your devices and analysis parameters</p>
+            </div>
+        </header>
+
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            <div class="space-y-6">
+                <!-- Parameters -->                <div class="setting-card">
+                    <h3 class="text-xs font-black uppercase tracking-[0.2em] text-blue-400 mb-8 flex items-center">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center mr-4 border border-blue-500/20 shadow-lg text-blue-400">
+                            <i class="fas fa-sliders-h text-xl"></i>
+                        </div>
+                        Signal Parameters
+                    </h3>
+                    <div class="space-y-6">
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                <span>Brightness Intensity</span>
+                                <span class="text-primary-blue">50%</span>
+                            </div>
+                            <input type="range" id="brightnessSlider" class="range-slider" min="0" max="100" value="50">
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                <span>Contrast Ratio</span>
+                                <span class="text-primary-blue">50%</span>
+                            </div>
+                            <input type="range" id="contrastSlider" class="range-slider" min="0" max="100" value="50">
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                                <span>Saturation</span>
+                                <span class="text-blue-400">50%</span>
+                            </div>
+                            <input type="range" id="saturationSlider" class="range-slider" min="0" max="100" value="50">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setting-card">
+                    <h3 class="text-xs font-black uppercase tracking-[0.2em] text-purple-400 mb-8 flex items-center">
+                        <div class="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center mr-4 border border-purple-500/20 shadow-lg text-purple-400">
+                            <i class="fas fa-tools text-xl"></i>
+                        </div>
+                        Advanced Tools
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-5 bg-white/5 rounded-2xl border border-white/5 shadow-sm">
+                            <div>
+                                <p class="text-xs font-extrabold text-white uppercase tracking-tight">Mirror Camera</p>
+                                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Flip the video feed horizontally.</p>
+                            </div>
+                            <input type="checkbox" id="mirrorToggle" class="w-5 h-5 accent-primary-blue" onchange="applySettings()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Permissions -->
+                <div class="setting-card">
+                    <h3 class="text-xs font-black uppercase tracking-[0.2em] text-emerald-400 mb-8 flex items-center">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center mr-4 border border-emerald-500/20 shadow-lg text-emerald-400">
+                            <i class="fas fa-shield-alt text-xl"></i>
+                        </div>
+                        System Permissions
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-5 bg-white/5 rounded-2xl border border-white/5 shadow-sm">
+                            <div>
+                                <p class="text-xs font-extrabold text-white uppercase tracking-tight">Camera Access</p>
+                                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Request browser camera permission.</p>
+                            </div>
+                            <button onclick="requestPermission('video')" class="btn-primary px-6 py-2 text-[10px]">Allow Access</button>
+                        </div>
+                        <div class="flex items-center justify-between p-5 bg-white/5 rounded-2xl border border-white/5 shadow-sm">
+                            <div>
+                                <p class="text-xs font-extrabold text-white uppercase tracking-tight">Microphone Access</p>
+                                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Request browser microphone permission.</p>
+                            </div>
+                            <button onclick="requestPermission('audio')" class="btn-primary px-6 py-2 text-[10px]">Allow Access</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex space-x-4 mt-8">
+                    <button onclick="saveCameraConfiguration(this)" class="flex-1 py-4 btn-primary text-xs tracking-widest">
+                        <i class="fas fa-save"></i> Apply Settings
+                    </button>
+                    <button onclick="resetSettings()" class="flex-1 py-4 btn-outline text-xs tracking-widest">
+                        <i class="fas fa-undo"></i> Reset to Default
+                    </button>
+                </div>
+
+            </div>
+
+            <div class="space-y-6">
+                <!-- Select Camera at Top -->
+                <div class="setting-card">
+                    <div class="space-y-4">
+                        <label class="text-[11px] text-slate-400 font-black uppercase tracking-[0.2em]">Primary Camera Interface</label>
+                        <select id="camSelect" class="w-full">
+                            <option value="">Loading devices...</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Enlarged Preview -->
+                <div class="preview-area group">
+                    <div id="camOff" class="absolute inset-0 bg-[#05080f] flex flex-col items-center justify-center">
+                        <i class="fas fa-video-slash text-7xl text-slate-800 mb-6"></i>
+                        <p class="text-[11px] font-black uppercase tracking-[0.3em] text-slate-700">Sensor Offline</p>
+                    </div>
+                    <video id="webcamPreview" autoplay playsinline></video>
+                    
+                    <div class="absolute top-8 left-8 flex space-x-4">
+                        <button id="toggleBtn" class="w-14 h-14 btn-outline border-rose-500/30 text-rose-500 hover:bg-rose-500 hover:text-white" onclick="toggleCam()">
+                            <i class="fas fa-power-off text-xl"></i>
+                        </button>
+                        <div id="statusTag" class="hidden px-5 py-3 bg-[#0c1524]/80 backdrop-blur-md border border-white/10 shadow-lg rounded-2xl flex items-center">
+                            <span class="w-2 h-2 bg-emerald-500 rounded-full mr-3 animate-pulse"></span>
+                            <span class="text-[10px] font-black text-white uppercase tracking-widest">Feed Active</span>
+                        </div>
+                    </div>
+
+                    <div class="absolute bottom-8 right-8">
+                        <span class="text-[10px] font-mono font-bold text-slate-400 bg-[#0c1524]/80 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 shadow-sm">4K UHD | 60 FPS | 2.4 Gbps</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+
+        const body = document.body;
+        let mediaStream = null;
+        let videoTrack = null;
+
+        // --- Sidebar Logic ---
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check session
+            try {
+                const result = await eel.get_current_user()();
+                const user = (result.success && result.data) ? result.data : null;
+                
+                if (!user) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // Update Name
+                const activeMember = document.querySelector('.active-member-info span.ml-1');
+                if (activeMember) activeMember.textContent = `${user.firstName} ${user.lastName} • Unit #${user.username.toUpperCase()}`;
+            } catch (err) { console.error("Session check failed:", err); }
+
+
+            // Initialize Sliders
+            setupSliders();
+            loadSliderValues();
+            setupLogoutHandler();
+        
+            // Populate Devices
+            await populateCameras(); 
+            await loadSavedPreferences();
+        });
+
+        // --- Camera & Settings Logic ---
+        async function populateCameras() {
+            const camSelect = document.getElementById('camSelect');
+            if (!camSelect) return;
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+                    camSelect.innerHTML = '<option value="">Searching...</option>';
+                    return;
+                }
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                camSelect.innerHTML = '';
+                const videoDevices = devices.filter(d => d.kind === 'videoinput');
+                if (videoDevices.length > 0) {
+                    videoDevices.forEach((device, index) => {
+                        const option = document.createElement('option');
+                        option.value = device.deviceId;
+                        option.text = device.label || `Camera ${index + 1}`;
+                        camSelect.appendChild(option);
+                    });
+                } else {
+                    camSelect.innerHTML = '<option value="">No Camera Detected</option>';
+                }
+            } catch (err) {
+                console.error("Error enumerating devices:", err);
+            }
+        }
+
+        async function loadSavedPreferences() {
+            try {
+                const result = await eel.load_preferences()();
+                if (result.success && result.preferences) {
+                    const prefs = result.preferences;
+                    if (prefs.default_camera) document.getElementById('camSelect').value = prefs.default_camera;
+                    if (prefs.brightness) document.getElementById('brightnessSlider').value = prefs.brightness;
+                    if (prefs.contrast) document.getElementById('contrastSlider').value = prefs.contrast;
+                    if (prefs.saturation) document.getElementById('saturationSlider').value = prefs.saturation;
+                    if (prefs.mirror_camera !== undefined) document.getElementById('mirrorToggle').checked = prefs.mirror_camera;
+                    
+                    document.querySelectorAll('.range-slider').forEach(s => {
+                        const display = s.previousElementSibling.querySelector('.text-primary-blue');
+                        if(display) display.innerText = s.value + '%';
+                    });
+                    applySettings();
+                }
+            } catch (e) { console.error("Failed to load preferences:", e); }
+        }
+
+        async function saveCameraConfiguration(btn) {
+             const camId = document.getElementById('camSelect').value;
+             const brightness = document.getElementById('brightnessSlider').value;
+             const contrast = document.getElementById('contrastSlider').value;
+             const saturation = document.getElementById('saturationSlider').value;
+             const mirror = document.getElementById('mirrorToggle').checked;
+             
+             const originalText = btn.innerText;
+             btn.innerText = "SAVING...";
+             btn.disabled = true;
+             
+             try {
+                 const prefs = {
+                     'default_camera': camId,
+                     'brightness': brightness,
+                     'contrast': contrast,
+                     'saturation': saturation,
+                     'mirror_camera': mirror
+                 };
+                 const result = await eel.save_preferences(prefs)();
+                 if (result && result.success) {
+                     btn.innerText = "SAVED!";
+                     btn.classList.add('bg-emerald-500', 'text-black', 'border-emerald-500');
+                     setTimeout(() => {
+                         btn.innerText = originalText;
+                         btn.classList.remove('bg-emerald-500', 'text-black', 'border-emerald-500');
+                         btn.disabled = false;
+                     }, 2000);
+                 }
+             } catch (e) { console.error("Save error:", e); btn.innerText = "ERROR"; setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000); }
+        }
+
+        async function toggleCam() {
+            const video = document.getElementById('webcamPreview');
+            const camOff = document.getElementById('camOff');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const statusTag = document.getElementById('statusTag');
+            const select = document.getElementById('camSelect');
+
+            if (!mediaStream) {
+                try {
+                    const deviceId = select.value;
+                    mediaStream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: deviceId ? { exact: deviceId } : undefined, width: { ideal: 1280 }, height: { ideal: 720 } } });
+                    video.srcObject = mediaStream;
+                    videoTrack = mediaStream.getVideoTracks()[0];
+                    video.style.display = 'block';
+                    camOff.classList.add('hidden');
+                    statusTag.classList.remove('hidden');
+                    toggleBtn.innerHTML = '<i class="fas fa-video"></i>';
+                    toggleBtn.classList.remove('bg-rose-50', 'text-rose-500', 'border-rose-100');
+                    toggleBtn.classList.add('bg-emerald-50', 'text-emerald-500', 'border-emerald-100');
+                    setTimeout(applySettings, 500);
+                } catch (err) { console.error("Camera error:", err); }
+            } else {
+                if(videoTrack) videoTrack.stop();
+                mediaStream = null;
+                videoTrack = null;
+                video.srcObject = null;
+                video.style.display = 'none';
+                camOff.classList.remove('hidden');
+                statusTag.classList.add('hidden');
+                toggleBtn.innerHTML = '<i class="fas fa-power-off"></i>';
+                toggleBtn.classList.add('bg-rose-50', 'text-rose-500', 'border-rose-100');
+                toggleBtn.classList.remove('bg-emerald-50', 'text-emerald-500', 'border-emerald-100');
+            }
+        }
+
+        async function requestPermission(type) {
+            try {
+                const constraints = type === 'video' ? { video: true } : { audio: true };
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                // Immediately stop the stream as we only wanted to trigger the permission prompt
+                stream.getTracks().forEach(track => track.stop());
+                alert(`${type.charAt(0).toUpperCase() + type.slice(1)} permission granted!`);
+                if (type === 'video') populateCameras();
+            } catch (err) {
+                console.error(`Permission denied for ${type}:`, err);
+                alert(`Could not get ${type} permission: ${err.message}`);
+            }
+        }
+
+        function setupSliders() {
+            document.querySelectorAll('.range-slider').forEach(slider => {
+                slider.addEventListener('input', (e) => {
+                    const display = e.target.previousElementSibling.querySelector('.text-primary-blue');
+                    if(display) display.innerText = e.target.value + (e.target.dataset.unit || '%');
+                    localStorage.setItem(e.target.id, e.target.value);
+                    applySettings();
+                });
+            });
+        }
+
+        function applySettings() {
+            const brightness = document.getElementById('brightnessSlider').value;
+            const contrast = document.getElementById('contrastSlider').value;
+            const saturation = document.getElementById('saturationSlider').value;
+            const video = document.getElementById('webcamPreview');
+            if(!video) return;
+
+            const bVal = 0.5 + (brightness / 100);
+            const cVal = 0.5 + (contrast / 100);
+            const sVal = 0.5 + (saturation / 100);
+            const mirror = document.getElementById('mirrorToggle').checked;
+            video.style.filter = `brightness(${bVal}) contrast(${cVal}) saturate(${sVal})`;
+            video.style.transform = mirror ? 'scaleX(-1)' : 'scaleX(1)';
+
+            if (videoTrack) {
+                videoTrack.applyConstraints({ advanced: [{ brightness: parseInt(brightness), contrast: parseInt(contrast), saturation: parseInt(saturation) }] }).catch(err => {});
+            }
+        }
+
+        function loadSliderValues() {
+            ['brightnessSlider', 'contrastSlider', 'saturationSlider'].forEach(id => {
+                const val = localStorage.getItem(id) || '50';
+                const el = document.getElementById(id);
+                if(el) el.value = val;
+            });
+            document.querySelectorAll('.range-slider').forEach(s => {
+                const display = s.previousElementSibling.querySelector('.text-primary-blue');
+                if(display) display.innerText = s.value + '%';
+            });
+        }
+
+        function resetSettings() {
+            ['brightnessSlider', 'contrastSlider', 'saturationSlider'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.value = 50;
+                localStorage.removeItem(id);
+            });
+            document.getElementById('mirrorToggle').checked = false;
+            localStorage.removeItem('mirrorToggle');
+            loadSliderValues();
+            applySettings();
+            eel.save_preferences(null)();
+        }
+
+        function setupLogoutHandler() {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if(item.innerText.includes('Logout')) item.onclick = (e) => { e.preventDefault(); closeApp(); }
+            });
+        }
+
+        function closeApp() {
+            if(confirm("Are you sure you want to logout?")) window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

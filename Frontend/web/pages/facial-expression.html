@@ -1,0 +1,1596 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deceptron - Facial Micro-Expression</title>
+  <link rel="icon" href="../assets/images/Eye icon.png">
+  <script src="/eel.js"></script>
+  <link rel="stylesheet" href="../styles/output.css" />
+  <script src="../scripts/chart.min.js"></script>
+  <link rel="stylesheet" href="../vendor/font-awesome/css/all.min.css" />
+  <link rel="stylesheet" href="../styles/sidebar.css" />
+  <script src="../scripts/wavesurfer.js"></script>
+  <script src="../js/common/constants.js"></script>
+  <script src="../js/common/utils.js"></script>
+  <script src="../js/common/api.js"></script>
+  <script src="../js/common/auth.js"></script>
+  <script src="../js/common/media-recorder.js"></script>
+  <script src="../js/components/sidebar.js"></script>
+  <script src="../js/components/vault-component.js"></script>
+  <script src="../js/components/loader.js"></script>
+  <style>
+    :root {
+      --primary-blue: #2563eb;
+      --accent-cyan: #0ea5e9;
+      --accent-rose: #ef4444;
+      --sidebar-width: 260px;
+      --config-width: 320px;
+
+      /* Vibrant University Pro Theme */
+      --bg-main: #0f172a;
+      --text-main: #ffffff;
+      --text-dim: #94a3b8;
+      --sidebar-bg: #0f172a;
+      --card-bg: #1e293b;
+      --border-subtle: #334155;
+    }
+
+    body {
+      font-family: "Inter", sans-serif;
+      background: var(--bg-main);
+      color: var(--text-main);
+      margin: 0;
+      overflow: hidden;
+      width: 100vw;
+      background-image:
+        radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.05) 0, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.05) 0, transparent 50%);
+      background-attachment: fixed;
+    }
+
+    .heading-font {
+      font-family: "Orbitron", sans-serif;
+    }
+
+    button,
+    a,
+    select,
+    input[type="checkbox"] {
+      cursor: pointer !important;
+    }
+
+    .glass {
+      background: var(--card-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 1.5rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .glass:hover {
+      border-color: var(--primary-blue);
+      transform: translateY(-2px);
+    }
+
+    .config-panel {
+      width: var(--config-width);
+      height: 100vh;
+      background: var(--card-bg);
+      border-left: 1px solid var(--border-subtle);
+      position: fixed;
+      right: 0;
+      top: 0;
+      z-index: 50;
+      padding: 2.5rem;
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.2);
+      overflow-y: auto;
+    }
+
+    .main-content {
+      margin-right: var(--config-width);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .video-container {
+      position: relative;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 1.5rem;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      aspect-ratio: 16/9;
+      transition: all 0.4s ease;
+    }
+
+    .video-container:hover {
+      border-color: var(--primary-blue);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #334155;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 0.5rem;
+    }
+
+    /* Toggle Switches */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 22px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #cbd5e1;
+      transition: 0.4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    input:checked+.slider {
+      background-color: var(--primary-blue);
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(22px);
+    }
+
+    /* Dropdown Styling */
+    select {
+      background-color: var(--card-bg) !important;
+      border: 1px solid var(--border-subtle);
+      color: #ffffff;
+      padding: 0.85rem;
+      border-radius: 0.75rem;
+      width: 100%;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%232563eb'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+      background-position: right 1rem center;
+      background-repeat: no-repeat;
+      background-size: 1.1rem;
+      transition: all 0.2s;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 15px rgba(0, 219, 255, 0.15);
+    }
+
+    .metric-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: 0.75rem;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+
+    .metric-item:hover {
+      border-color: var(--primary-blue);
+      transform: translateX(4px);
+    }
+
+    .vault-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      transition: all 0.2s ease;
+      border-radius: 1rem;
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .vault-item:hover {
+      border-color: var(--primary-blue);
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateX(5px);
+    }
+
+    /* Circular Chart Container */
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 180px;
+      filter: drop-shadow(0 4px 10px rgba(0, 118, 214, 0.1));
+    }
+
+    /* Emotion Badge Colors */
+    .badge-neutral {
+      background: #ecfdf5;
+      color: #059669;
+      border: 1.5px solid #d1fae5;
+    }
+
+    .badge-anger {
+      background: #fffbeb;
+      color: #d97706;
+      border: 1.5px solid #fef3c7;
+    }
+
+    .badge-fear {
+      background: #fee2e2;
+      color: #dc2626;
+      border: 1.5px solid #fecaca;
+    }
+
+    .badge-surprise {
+      background: #f5f3ff;
+      color: #7c3aed;
+      border: 1.5px solid #ede9fe;
+    }
+
+    /* Table Styling */
+    .frame-table-container {
+      max-height: 250px;
+      overflow-y: auto;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border-subtle);
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .frame-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .frame-table th {
+      background: var(--bg-main);
+      color: var(--primary-blue);
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 1.25rem;
+      text-align: left;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .frame-table td {
+      padding: 1.15rem 1.25rem;
+      font-size: 0.75rem;
+      color: #ffffff;
+      border-bottom: 1px solid var(--border-subtle);
+      transition: all 0.2s ease;
+    }
+
+    .frame-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--primary-blue);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 118, 214, 0.15);
+      border-radius: 10px;
+    }
+
+    /* Modal Styling */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.3);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      width: 90%;
+      max-width: 600px;
+      padding: 2.5rem;
+      border-radius: 1.5rem;
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+      position: relative;
+    }
+    .btn-primary {
+      background: rgba(37, 99, 235, 0.1);
+      border: 1px solid rgba(37, 99, 235, 0.3);
+      color: var(--accent-cyan);
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-blue);
+      color: #ffffff;
+      border-color: var(--primary-blue);
+      box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      border: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--primary-blue);
+      background: var(--primary-blue);
+      color: #ffffff;
+      box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+
+<body>
+  <script>
+    initSidebar();
+  </script>
+
+  <!-- Evidence Vault Modal -->
+  <div id="vaultModal" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-8">
+        <div>
+          <h2 class="text-xl font-bold heading-font text-white uppercase tracking-wider">Recording Library</h2>
+          <p class="text-[10px] text-dim uppercase font-bold tracking-widest mt-1">Select video file for deep scan</p>
+        </div>
+        <button onclick="VaultComponent.close()"
+          class="text-slate-400 hover:text-primary-blue transition-colors text-xl">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+        <div class="vault-item group" onclick="VaultComponent.selectMock('suspect_interview_01.mp4')">
+          <div class="flex items-center space-x-4">
+            <div
+              class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center">
+              <i class="fas fa-video text-lg"></i>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-white">suspect_interview_01.mp4</p>
+              <p class="text-[9px] text-dim font-mono">124.5 MB • 14:20 • RAW_AV</p>
+            </div>
+          </div>
+          <i class="fas fa-chevron-right text-slate-200 group-hover:text-primary-blue transition-colors"></i>
+        </div>
+
+        <div class="vault-item group" onclick="VaultComponent.selectMock('debrief_session_cam1.mp4')">
+          <div class="flex items-center space-x-4">
+            <div
+              class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center">
+              <i class="fas fa-video text-lg"></i>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-white">debrief_session_cam1.mp4</p>
+              <p class="text-[9px] text-dim font-mono">110.2 MB • 08:30 • RAW_AV</p>
+            </div>
+          </div>
+          <i class="fas fa-chevron-right text-slate-200 group-hover:text-primary-blue transition-colors"></i>
+        </div>
+
+        <div class="vault-item group opacity-50 cursor-not-allowed">
+          <div class="flex items-center space-x-4">
+            <div
+              class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center">
+              <i class="fas fa-microphone text-lg"></i>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-white">witness_call_log.wav</p>
+              <p class="text-[9px] text-dim font-mono italic">Audio-only (Switch to Voice Analysis)</p>
+            </div>
+          </div>
+          <i class="fas fa-lock text-slate-200"></i>
+        </div>
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-slate-100 flex justify-end">
+        <p class="text-[9px] text-slate-400 uppercase tracking-widest">Showing locally stored evidence records</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Configuration Panel -->
+  <aside class="config-panel flex flex-col gap-6">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-xs font-bold uppercase tracking-widest text-primary-blue flex items-center">
+        <i class="fas fa-cog mr-2"></i> Configuration
+      </h3>
+    </div>
+
+    <div class="h-[1px] bg-gradient-to-r from-cyan-500/50 to-transparent mb-4"></div>
+
+    <!-- Source Section -->
+    <div class="space-y-6">
+      <div class="space-y-2">
+        <label class="text-[9px] text-dim font-bold uppercase tracking-widest">Video Source</label>
+        <select id="videoSource" class="w-full">
+          <option>Loading...</option>
+        </select>
+      </div>
+
+      <div class="space-y-4">
+        <label class="text-[9px] text-gray-500 font-bold uppercase tracking-widest block">Source Controls</label>
+        <div class="grid grid-cols-2 gap-3">
+          <button id="mainCamBtn" class="btn-outline border-rose-500/30 text-rose-500 text-[9px] py-2.5" onclick="toggleCamera()">
+            <i class="fas fa-video-slash"></i> Camera Off
+          </button>
+          <button id="clearVaultBtn" class="btn-outline border-rose-500/30 text-rose-500 text-[9px] py-2.5" onclick="clearVault()">
+            <i class="fas fa-undo"></i> Clear Vault
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="h-[1px] bg-slate-100"></div>
+
+    <!-- Module Testing -->
+    <div class="space-y-4">
+      <label class="text-[9px] text-dim font-bold uppercase tracking-widest block">Module Testing</label>
+
+      <div class="metric-item">
+        <div class="flex items-center gap-3">
+          <i class="fas fa-network-wired text-[10px] text-purple-400"></i>
+          <span class="text-xs font-bold text-white">Show Face Mesh</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="toggleFaceMesh" />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="metric-item">
+        <div class="flex items-center gap-3">
+          <i class="fas fa-eye text-[10px] text-cyan-400"></i>
+          <span class="text-xs font-bold text-white">Track Eyes & Gaze</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="toggleEyeGaze" />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="metric-item">
+        <div class="flex items-center gap-3">
+          <i class="fas fa-grip-lines text-[10px] text-amber-500"></i>
+          <span class="text-xs font-bold text-white">Track Lips & Jaw</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="toggleLipsJaw" />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="metric-item">
+        <div class="flex items-center gap-3">
+          <i class="fas fa-smile text-[10px] text-emerald-400"></i>
+          <span class="text-xs font-bold text-white">Emotions Detection</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="toggleEmotions" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="mt-auto pt-6">
+      <button
+        class="w-full py-3 btn-outline text-[9px]"
+        onclick="resetConfigurations()">
+        <i class="fas fa-sync-alt"></i> Reset to Default
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="p-8 pb-4 flex justify-between items-center">
+      <div>
+        <h1 class="text-3xl font-bold heading-font text-white tracking-tight">Analysis Unit</h1>
+        <div class="flex items-center mt-2 text-[10px] text-dim font-bold tracking-[0.2em] uppercase">
+          Visual Sensors Synchronized
+        </div>
+      </div>
+      <div class="flex items-center space-x-3">
+        <div class="bg-card-bg border border-border-subtle px-4 py-2 rounded-xl flex items-center space-x-3 shadow-sm">
+          <span id="statusTag" class="text-[10px] text-dim uppercase font-bold tracking-widest">System Ready</span>
+          <div id="statusDot" class="w-2 h-2 bg-slate-600 rounded-full transition-all duration-500"></div>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <button
+            class="btn-outline px-6 py-2.5"
+            onclick="openVaultSelection()">
+            <i class="fas fa-folder-open text-primary-blue"></i> Evidence Vault
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Monitoring Section -->
+    <div class="px-4">
+      <div class="video-container group">
+        <div id="camOffState"
+          class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-slate-500 transition-opacity duration-500 z-10">
+          <i class="fas fa-video-slash video-slash-icon text-7xl mb-6 opacity-40"></i>
+          <p class="text-sm font-mono tracking-[0.3em] uppercase opacity-50">Interface: Offline</p>
+          <button
+            class="mt-6 px-8 py-2.5 btn-primary rounded-full"
+            onclick="toggleCamera()">
+            Turn on Camera
+          </button>
+        </div>
+
+        <div id="camOnState" class="absolute inset-0 bg-black hidden">
+          <div class="absolute inset-0 bg-cyan-900/10 flex items-center justify-center text-gray-600">
+            <i class="fas fa-spinner fa-spin text-4xl text-cyan-500"></i>
+          </div>
+          <video id="webcam" class="absolute inset-0 w-full h-full object-cover" style="transform: scaleX(-1);"
+            muted></video>
+        </div>
+
+        <!-- Notification Toast inside Video -->
+        <div id="videoToast"
+          class="absolute top-20 left-1/2 -translate-x-1/2 z-30 transition-all duration-500 opacity-0 translate-y-4">
+          <div class="px-6 py-2 bg-primary-blue text-white text-[10px] font-bold uppercase rounded-full shadow-[0_0_20px_rgba(37,99,235,0.4)]">
+            Scanner & Interface Online
+          </div>
+        </div>
+      </div>
+
+      <!-- Recording Controls Bar -->
+      <div class="glass mt-4 p-4 flex justify-between items-center px-6">
+        <div class="flex items-center space-x-4">
+          <button id="camBtn"
+            class="w-10 h-10 rounded-xl bg-primary-blue/10 border border-primary-blue/20 text-primary-blue flex items-center justify-center hover:bg-primary-blue hover:text-white transition-all duration-300"
+            onclick="toggleCamera()">
+            <i class="fas fa-camera"></i>
+          </button>
+          <button id="pauseBtn"
+            class="w-10 h-10 rounded-xl flex items-center justify-center text-amber-500 hover:text-white hover:bg-amber-500 transition-all border border-amber-500/20 hidden"
+            onclick="togglePause()">
+            <i class="fas fa-pause"></i>
+          </button>
+          <div class="h-8 w-[2px] bg-white/5 mx-2"></div>
+          <div id="recIndicator"
+            class="flex items-center bg-rose-500/10 border border-rose-500/20 px-2 py-1 rounded-md hidden">
+            <span class="w-2 h-2 bg-rose-600 rounded-full animate-pulse mr-1.5"></span>
+            <span class="text-[9px] font-bold text-rose-500 uppercase tracking-tighter">REC</span>
+          </div>
+          <div id="recordingTimer" class="text-xl font-mono text-white tabular-nums">00:00:00</div>
+        </div>
+        <div class="flex items-center space-x-3">
+          <button id="sessionBtn"
+            class="btn-primary px-10 py-3 text-xs"
+            onclick="handleSessionToggle()">
+            <i class="fas fa-play"></i> Start Recording
+          </button>
+          <button id="analyseBtn"
+            class="btn-primary px-10 py-3 text-xs hidden"
+            onclick="finalizeAnalysis()">
+            <i class="fas fa-brain"></i> Analyse
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analysis Output Unit -->
+    <section class="px-4 pb-8 h-[500px]">
+      <div class="glass p-8 relative overflow-hidden h-full flex flex-col border-cyan-500/10">
+        <div class="flex justify-between items-center mb-6">
+          <div class="flex justify-between items-center w-full">
+            <div class="flex items-center space-x-3">
+              <div
+                class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20">
+                <i class="fas fa-video text-lg"></i>
+              </div>
+              <h3 class="text-xs font-bold uppercase tracking-[0.2em] text-white">Video Output</h3>
+            </div>
+            <div class="flex items-center space-x-3">
+              <button title="Maximize"
+                class="text-dim hover:text-blue-400 transition-all transform hover:scale-110 p-1.5"><i
+                  class="fas fa-expand-arrows-alt text-xs"></i></button>
+              <button title="Download Clip"
+                class="text-dim hover:text-blue-400 transition-all transform hover:scale-110 p-1.5"><i
+                  class="fas fa-download text-xs"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="flex-1 relative video-inner-wrap bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden group shadow-2xl">
+          <canvas id="analysisOutputCanvas" class="w-full h-full object-cover opacity-90"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- AI Analysis Results Section -->
+    <section class="px-4 pb-8 space-y-6">
+      <div class="flex items-center space-x-3 text-blue-500">
+        <div class="h-[1px] flex-1 bg-white/5"></div>
+        <h2 class="text-[11px] font-bold uppercase tracking-[0.3em] whitespace-nowrap text-center">Analysis Results</h2>
+        <div class="h-[1px] flex-1 bg-white/5"></div>
+      </div>
+
+      <!-- Emotions Detection Analysis -->
+      <article class="glass p-6 border-slate-100/50">
+        <h3 class="text-[10px] font-bold text-dim uppercase tracking-widest flex items-center mb-4">
+          <i class="fas fa-smile mr-2 text-emerald-400"></i> Emotions Detection Analysis
+        </h3>
+        <div class="frame-table-container">
+          <table class="frame-table">
+            <thead>
+              <tr>
+                <th>Frame #</th>
+                <th>Timestamp</th>
+                <th>Dominant Emotion</th>
+                <th>Micro-Expression</th>
+                <th>Confidence Score</th>
+              </tr>
+            </thead>
+            <tbody id="emotionTableBody"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <!-- Visual Focus & Eye Dynamics -->
+      <article class="glass p-6 border-slate-100">
+        <h3 class="text-[10px] font-bold text-dim uppercase tracking-widest flex items-center mb-4">
+          <i class="fas fa-eye mr-2 text-blue-400"></i> Visual Focus & Eye Dynamics
+        </h3>
+        <div class="frame-table-container">
+          <table class="frame-table">
+            <thead>
+              <tr>
+                <th>Frame #</th>
+                <th>Timestamp</th>
+                <th>Blink Activity</th>
+                <th>Focus Area</th>
+                <th>Fixation Score</th>
+                <th>Gaze Stability</th>
+              </tr>
+            </thead>
+            <tbody id="eyeTrackTableBody"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <!-- Oral & Jaw Activity -->
+      <article class="glass p-6 border-slate-100">
+        <h3 class="text-[10px] font-bold text-dim uppercase tracking-widest flex items-center mb-4">
+          <i class="fas fa-comment-dots mr-2 text-rose-400"></i> Oral & Jaw Activity
+        </h3>
+        <div class="frame-table-container">
+          <table class="frame-table">
+            <thead>
+              <tr>
+                <th>Frame #</th>
+                <th>Timestamp</th>
+                <th>Jaw Tightness</th>
+                <th>Oral Stress</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="lipsTableBody"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <!-- Visual Circular Graphs Section -->
+      <div id="circularGraphsSection" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <article class="glass p-6">
+          <h3 class="text-[10px] font-bold text-dim uppercase tracking-widest flex items-center mb-4">
+            <i class="fas fa-chart-pie mr-2 text-blue-400"></i> Overall Emotion Distribution
+          </h3>
+          <div class="relative h-48 flex items-center justify-center">
+            <canvas id="emotionDistributionChart" width="180" height="180"></canvas>
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span class="text-2xl font-bold text-emerald-400">60%</span>
+              <span class="text-[8px] text-dim uppercase tracking-tighter">Neutrality</span>
+            </div>
+          </div>
+          <div class="mt-4 space-y-2 text-[10px]">
+            <div class="flex justify-between items-center">
+              <span class="flex items-center gap-2"><span
+                  class="w-2 h-2 rounded-full bg-emerald-400"></span>Neutral</span>
+              <span class="text-emerald-400 font-bold">60%</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-400"></span>Anger</span>
+              <span class="text-amber-400 font-bold">25%</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-400"></span>Fear</span>
+              <span class="text-rose-400 font-bold">15%</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="glass p-6">
+          <h3 class="text-[10px] font-bold text-dim uppercase tracking-widest flex items-center mb-4">
+            <i class="fas fa-eye mr-2 text-purple-400"></i> Eye Movement Tracking
+          </h3>
+          <div class="relative h-48 flex items-center justify-center">
+            <canvas id="eyeMovementChart" width="180" height="180"></canvas>
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span class="text-2xl font-bold text-blue-400">70%</span>
+              <span class="text-[8px] text-dim uppercase tracking-tighter">Steady Gaze</span>
+            </div>
+          </div>
+          <div class="mt-4 space-y-2 text-[10px]">
+            <div class="flex justify-between items-center">
+              <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-cyan-400"></span>Steady
+                Gaze</span>
+              <span class="text-cyan-400 font-bold">70%</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-400"></span>Rapid
+                Blinking</span>
+              <span class="text-amber-400 font-bold">30%</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="glass p-6">
+          <h3 class="text-[10px] font-bold text-dim uppercase tracking-widest flex items-center mb-4">
+            <i class="fas fa-grip-lines mr-2 text-amber-400"></i> Lips & Jaw Anomalies
+          </h3>
+          <div class="relative h-48 flex items-center justify-center">
+            <canvas id="lipsJawChart" width="180" height="180"></canvas>
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span class="text-2xl font-bold text-emerald-400">85%</span>
+              <span class="text-[8px] text-dim uppercase tracking-tighter">Normal Activity</span>
+            </div>
+          </div>
+          <div class="mt-4 space-y-2 text-[10px]">
+            <div class="flex justify-between items-center">
+              <span class="flex items-center gap-2"><span
+                  class="w-2 h-2 rounded-full bg-emerald-400"></span>Normal</span>
+              <span class="text-emerald-400 font-bold">85%</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-400"></span>Tensed</span>
+              <span class="text-rose-400 font-bold">15%</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal for Saving Session -->
+  <div id="saveModal"
+    class="fixed inset-0 bg-slate-900/40 backdrop-blur-xl z-[999] hidden flex items-center justify-center opacity-0 transition-all duration-300">
+    <div
+      class="bg-card-bg border border-border-subtle p-10 rounded-3xl w-full max-w-lg transform scale-95 transition-all duration-300 shadow-2xl">
+      <h2 class="text-2xl font-bold heading-font text-white mb-2 uppercase">Save Recording</h2>
+      <p class="text-[10px] text-dim mb-8 uppercase tracking-widest font-bold">Finalize the analysis record</p>
+
+      <div class="space-y-5">
+        <div class="space-y-2">
+          <label class="text-[10px] font-bold text-dim uppercase tracking-widest">Subject Identifier</label>
+          <input id="subjectIdInput" type="text" placeholder="Enter name or ID..."
+            class="w-full bg-black/20 border border-border-subtle rounded-xl px-4 py-4 text-sm text-white focus:border-primary-blue focus:outline-none transition-all" />
+        </div>
+      </div>
+
+      <div class="mt-10 flex flex-col space-y-3">
+        <button
+          class="w-full py-4 bg-primary-blue text-white text-[10px] font-bold uppercase rounded-xl shadow-lg transition-all"
+          onclick="saveData()">
+          Save Record
+        </button>
+        <div class="flex space-x-3">
+          <button
+            class="flex-1 py-4 bg-white/5 hover:bg-white/10 text-[10px] font-bold uppercase rounded-xl transition-all text-dim border border-border-subtle"
+            onclick="closeSaveModal()">
+            Continue Session
+          </button>
+          <button
+            class="flex-1 py-4 bg-rose-500/10 hover:bg-rose-500/20 text-[10px] font-bold uppercase rounded-xl transition-all text-rose-500 border border-rose-500/20"
+            onclick="discardSession()">
+            Discard Data
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global State
+    const body = document.body;
+    let cameraOn = false;
+    let mediaStream = null;
+
+    // Video Output Logic
+    const analysisCanvas = document.getElementById("analysisOutputCanvas");
+    const analysisCtx = analysisCanvas ? analysisCanvas.getContext("2d") : null;
+
+    function startAnalysisProcessing() {
+      const video = document.getElementById("webcam");
+      if (!video || !analysisCtx) return;
+
+      function processFrame() {
+        if (!cameraOn || video.paused || video.ended) {
+          analysisCtx.fillStyle = '#05080f';
+          analysisCtx.fillRect(0, 0, analysisCanvas.width, analysisCanvas.height);
+          requestAnimationFrame(processFrame);
+          return;
+        }
+
+        if (video.videoWidth && video.videoHeight && (analysisCanvas.width !== video.videoWidth || analysisCanvas.height !== video.videoHeight)) {
+          analysisCanvas.width = video.videoWidth;
+          analysisCanvas.height = video.videoHeight;
+        }
+
+        const centerX = analysisCanvas.width / 2;
+        const centerY = analysisCanvas.height / 2;
+
+        if (!window.isAnalysisRunning) {
+          analysisCtx.fillStyle = '#05080f';
+          analysisCtx.fillRect(0, 0, analysisCanvas.width, analysisCanvas.height);
+          analysisCtx.fillStyle = '#6b7280';
+          analysisCtx.font = '16px Inter, sans-serif';
+          analysisCtx.textAlign = 'center';
+          analysisCtx.textBaseline = 'middle';
+          analysisCtx.fillText("AWAITING SIGNAL...", centerX, centerY);
+
+          requestAnimationFrame(processFrame);
+          return;
+        }
+
+        if (analysisCanvas.width !== video.videoWidth) {
+          analysisCanvas.width = video.videoWidth;
+          analysisCanvas.height = video.videoHeight;
+        }
+
+        analysisCtx.save();
+        if (video.style.transform.includes("scaleX(-1)")) {
+          analysisCtx.translate(analysisCanvas.width, 0);
+          analysisCtx.scale(-1, 1);
+        }
+
+        analysisCtx.drawImage(video, 0, 0, analysisCanvas.width, analysisCanvas.height);
+        analysisCtx.restore();
+
+        analysisCtx.globalCompositeOperation = 'overlay';
+        analysisCtx.fillStyle = 'rgba(0, 219, 255, 0.15)';
+        analysisCtx.fillRect(0, 0, analysisCanvas.width, analysisCanvas.height);
+        analysisCtx.globalCompositeOperation = 'source-over';
+
+        if (Math.random() > 0.95) {
+          analysisCtx.fillStyle = 'rgba(0, 219, 255, 0.2)';
+          analysisCtx.fillRect(0, Math.random() * analysisCanvas.height, analysisCanvas.width, 1);
+        }
+
+        requestAnimationFrame(processFrame);
+      }
+      processFrame();
+    }
+
+    // Sidebar Logic
+
+    // Camera & Devices Logic
+    async function populateDevices() {
+      const vSelect = document.getElementById('videoSource');
+      if (!vSelect) return;
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+          vSelect.innerHTML = '<option value="">Searching...</option>';
+          return;
+        }
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        vSelect.innerHTML = '';
+        const videoDevices = devices.filter(d => d.kind === 'videoinput');
+        videoDevices.forEach((device, index) => {
+          const option = document.createElement('option');
+          option.value = device.deviceId;
+          option.text = device.label || `Camera ${index + 1}`;
+          vSelect.appendChild(option);
+        });
+
+        if (videoDevices.length > 0) {
+          const prefPromise = eel.load_preferences()();
+          const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({success: false, message: "Timeout"}), 2000));
+          const result = await Promise.race([prefPromise, timeoutPromise]);
+          
+          if (result.success && result.preferences) {
+            if (result.preferences.default_camera) {
+              const exists = videoDevices.some(d => d.deviceId === result.preferences.default_camera);
+              if (exists) vSelect.value = result.preferences.default_camera;
+            }
+            const v = document.getElementById('webcam');
+            if (v) {
+              const b = result.preferences.brightness || 50;
+              const c = result.preferences.contrast || 50;
+              const s = result.preferences.saturation || 50;
+              const mirror = result.preferences.mirror_camera || false;
+              v.style.filter = `brightness(${0.5 + b / 100}) contrast(${0.5 + c / 100}) saturate(${0.5 + s / 100})`;
+              v.style.transform = mirror ? 'scaleX(-1)' : 'scaleX(1)';
+            }
+          }
+        }
+        if (videoDevices.length === 0) vSelect.innerHTML = '<option value="">No Camera Detected</option>';
+      } catch (err) { console.error("Error enumerating devices:", err); }
+    }
+
+    async function toggleCamera() {
+      const off = document.getElementById("camOffState");
+      const on = document.getElementById("camOnState");
+      const mainBtn = document.getElementById("mainCamBtn");
+      const camBtn = document.getElementById("camBtn");
+      const toast = document.getElementById("videoToast");
+      const video = document.getElementById("webcam");
+      const vSelect = document.getElementById('videoSource');
+
+      if (!cameraOn) {
+        try {
+          const cameraId = vSelect.value;
+          const constraints = {
+            video: cameraId ? { deviceId: { exact: cameraId }, width: { ideal: 1280 }, height: { ideal: 720 } } : true,
+            audio: false,
+          };
+
+          mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+          video.srcObject = mediaStream;
+          video.src = "";
+          await video.play();
+          cameraOn = true;
+
+          off.style.opacity = "0";
+          setTimeout(() => {
+            off.classList.add("hidden");
+            on.classList.remove("hidden");
+            on.classList.add("flex");
+
+            if (mainBtn) {
+              mainBtn.innerHTML = '<i class="fas fa-video mr-2"></i> Camera On';
+              mainBtn.classList.remove("bg-rose-500/10", "text-rose-500", "border-rose-500/30");
+              mainBtn.classList.add("bg-cyan-500/10", "text-cyan-500", "border-cyan-500/30", "hover:bg-cyan-500", "hover:text-white");
+            }
+            if (camBtn) camBtn.classList.add("active");
+
+            toast.classList.remove("opacity-0", "translate-y-4");
+            toast.classList.add("opacity-1", "translate-y-0");
+            setTimeout(() => {
+              toast.classList.add("opacity-0", "translate-y-4");
+            }, 2000);
+          }, 300);
+
+          video.style.transform = "scaleX(-1)";
+          updateStatusUI('live', 'Feed Active');
+          populateDevices();
+        } catch (err) { console.error("Error accessing camera:", err); cameraOn = false; }
+      } else {
+        if (mediaStream) { mediaStream.getTracks().forEach(track => track.stop()); mediaStream = null; }
+        video.srcObject = null;
+        video.src = "";
+        video.removeAttribute('controls');
+        cameraOn = false;
+        on.classList.add("hidden");
+        on.classList.remove("flex");
+        off.classList.remove("hidden");
+        setTimeout(() => off.style.opacity = "1", 10);
+
+        if (mainBtn) {
+          mainBtn.innerHTML = '<i class="fas fa-video-slash"></i> Camera Off';
+          mainBtn.classList.add("bg-rose-500/10", "text-rose-500", "border-rose-500/30");
+          mainBtn.classList.remove("bg-cyan-500/10", "text-cyan-500", "border-cyan-500/30", "hover:bg-cyan-500", "hover:text-white");
+        }
+        if (camBtn) camBtn.classList.remove("active");
+
+        video.style.transform = "none";
+        updateStatusUI('ready', 'System Ready');
+
+        if (isRecording) handleSessionToggle();
+      }
+    }
+
+    let isRecording = false;
+    let mediaRecorder;
+    let recordedChunks = [];
+    let startTime;
+    let timerInterval;
+
+    function updateTimer() {
+      if (!startTime) return;
+      const now = new Date();
+      const diff = new Date(now - startTime);
+      const h = String(diff.getUTCHours()).padStart(2, '0');
+      const m = String(diff.getUTCMinutes()).padStart(2, '0');
+      const s = String(diff.getUTCSeconds()).padStart(2, '0');
+      document.getElementById("recordingTimer").innerText = `${h}:${m}:${s}`;
+    }
+
+    function handleSessionToggle() {
+      const btn = document.getElementById("sessionBtn");
+      const pauseBtn = document.getElementById("pauseBtn");
+      const recIndicator = document.getElementById("recIndicator");
+      const toast = document.getElementById("videoToast");
+
+      if (!isRecording) {
+        if (!mediaStream) {
+          alert("Please turn on the camera first.");
+          return;
+        }
+
+        recordedChunks = [];
+        const options = MediaRecorder.isTypeSupported('video/webm;codecs=vp8')
+          ? { mimeType: 'video/webm;codecs=vp8' }
+          : {};
+
+        mediaRecorder = new MediaRecorder(mediaStream, options);
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) recordedChunks.push(event.data);
+        };
+        mediaRecorder.start(1000);
+        isRecording = true;
+        toast.innerHTML = "<i class='fas fa-check-circle mr-2'></i> Session Data Saved Successfully";
+        btn.classList.remove("bg-cyan-600", "shadow-cyan-500/20");
+        btn.classList.add("bg-red-600", "shadow-red-500/20");
+
+        if (pauseBtn) pauseBtn.classList.remove("hidden");
+        if (recIndicator) recIndicator.classList.remove("hidden");
+
+        startTime = new Date();
+        timerInterval = setInterval(updateTimer, 1000);
+        updateStatusUI('live', 'Recording Active');
+
+        toast.querySelector("div").innerText = "Recording Started";
+        toast.classList.remove("opacity-0", "translate-y-4");
+        toast.classList.add("opacity-1", "translate-y-0");
+        setTimeout(() => toast.classList.add("opacity-0", "translate-y-4"), 1500);
+      } else {
+        mediaRecorder.stop();
+        if (mediaStream) {
+          mediaStream.getTracks().forEach(track => track.stop());
+          mediaStream = null;
+        }
+        if (pauseBtn) pauseBtn.classList.add("hidden");
+        if (recIndicator) recIndicator.classList.add("hidden");
+        clearInterval(timerInterval);
+        openSaveModal();
+      }
+    }
+
+    function togglePause() {
+      const pauseBtn = document.getElementById('pauseBtn');
+      if (mediaRecorder.state === "recording") {
+        mediaRecorder.pause();
+        pauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+        pauseBtn.classList.remove("text-amber-500", "border-amber-500/20");
+        pauseBtn.classList.add("bg-amber-500", "text-white");
+      } else if (mediaRecorder.state === "paused") {
+        mediaRecorder.resume();
+        pauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        pauseBtn.classList.add("text-amber-500", "border-amber-500/20");
+        pauseBtn.classList.remove("bg-amber-500", "text-white");
+      }
+    }
+
+    function openSaveModal() {
+      const m = document.getElementById("saveModal");
+      m.classList.remove("hidden");
+      setTimeout(() => {
+        m.classList.remove("opacity-0");
+        m.querySelector("div").classList.remove("scale-95");
+        m.querySelector("div").classList.add("scale-100");
+      }, 10);
+    }
+
+    function closeSaveModal() {
+      const m = document.getElementById("saveModal");
+      m.classList.add("opacity-0");
+      m.querySelector("div").classList.add("scale-95");
+      setTimeout(() => m.classList.add("hidden"), 300);
+    }
+
+    async function saveData() {
+      const subjectId = document.getElementById('subjectIdInput').value || "Unknown_Subject";
+      const filename = `facial_${subjectId}_${new Date().getTime()}.webm`;
+
+      const saveBtn = document.querySelector('#saveModal button[onclick="saveData()"]');
+      const originalText = saveBtn.innerText;
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving... <span id="saveProgress">0%</span>';
+
+      try {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const size = blob.size;
+        const sizeMB = (size / (1024 * 1024)).toFixed(1) + " MB";
+
+        const initResult = await eel.initiate_upload(filename, sizeMB, 'video', true)();
+        if (!initResult.success) throw new Error(initResult.message);
+
+        const uploadId = initResult.data.upload_id;
+        const CHUNK_SIZE = 1024 * 1024;
+        let offset = 0;
+
+        while (offset < size) {
+          const chunk = blob.slice(offset, offset + CHUNK_SIZE);
+          const reader = new FileReader();
+
+          await new Promise((resolve, reject) => {
+            reader.onload = async (e) => {
+              try {
+                const result = await eel.append_upload_chunk(uploadId, e.target.result)();
+                if (!result.success) reject(new Error(result.message));
+                resolve();
+              } catch (err) { reject(err); }
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(chunk);
+          });
+
+          offset += CHUNK_SIZE;
+          const progress = Math.min(100, Math.round((offset / size) * 100));
+          document.getElementById('saveProgress').innerText = progress + "%";
+        }
+
+        const finalResult = await eel.finalize_upload(uploadId)();
+        if (finalResult.success) {
+          closeSaveModal();
+          const video = document.getElementById("webcam");
+          video.srcObject = null;
+          video.src = (finalResult.data && finalResult.data.filepath) ? finalResult.data.filepath : `../recordings/${filename}`;
+          video.setAttribute('controls', 'true');
+          video.style.transform = "scaleX(-1)";
+          const off = document.getElementById("camOffState");
+          const on = document.getElementById("camOnState");
+          off.classList.add("hidden");
+          on.classList.remove("hidden");
+
+          document.getElementById('analyseBtn').classList.remove('hidden');
+          updateStatusUI('ready', 'Session Saved');
+        } else {
+          throw new Error(finalResult.message);
+        }
+        resetUIState();
+      } catch (e) {
+        console.error(e);
+        alert("Error saving recording: " + e.message);
+        saveBtn.disabled = false;
+        saveBtn.innerText = originalText;
+      }
+    }
+
+    function discardSession() {
+      if (confirm("Discard recording?")) {
+        closeSaveModal();
+        recordedChunks = [];
+        if (mediaStream) {
+          mediaStream.getTracks().forEach(track => track.stop());
+          mediaStream = null;
+        }
+        resetUIState();
+      }
+    }
+
+    function resetUIState() {
+      window.isAnalysisRunning = false;
+      isRecording = false;
+      const btn = document.getElementById("sessionBtn");
+      btn.innerHTML = '<i class="fas fa-play mr-2"></i> Start Recording';
+      btn.classList.add("bg-cyan-600");
+      btn.classList.remove("bg-red-600");
+      document.getElementById("recordingTimer").innerText = "00:00:00";
+      if (timerInterval) clearInterval(timerInterval);
+      document.getElementById("recIndicator").classList.add("hidden");
+      cameraOn = (mediaStream !== null);
+    }
+
+    function finalizeAnalysis() {
+      window.isAnalysisRunning = true;
+      Loader.show("Analyzing Patterns");
+      setTimeout(() => {
+        Loader.hide();
+        showToast("Analysis Complete", "success");
+        populateMockTables();
+      }, 2500);
+    }
+
+    function showToast(message, type) {
+      const toast = document.getElementById("videoToast");
+      toast.querySelector("div").innerText = message;
+      toast.querySelector("div").className = type === 'success'
+        ? "px-6 py-2 bg-emerald-500 text-white text-[10px] font-bold uppercase rounded-full shadow-lg shadow-emerald-500/40"
+        : "px-6 py-2 bg-cyan-500 text-white text-[10px] font-bold uppercase rounded-full shadow-lg shadow-cyan-500/40";
+      toast.classList.remove("opacity-0", "translate-y-4");
+      toast.classList.add("opacity-1", "translate-y-0");
+      setTimeout(() => toast.classList.add("opacity-0", "translate-y-4"), 2000);
+    }
+
+    function populateMockTables() {
+      const timestamps = ["00:15", "00:17", "00:19", "00:21", "00:23"];
+
+      const emotionMarkup = [
+        ['#1', '00:15', 'Neutral', 'Blink', '87%'],
+        ['#2', '00:17', 'Fear', 'Eye Widen', '92%'],
+        ['#3', '00:19', 'Anger', 'Brow Lower', '78%'],
+        ['#4', '00:21', 'Surprise', 'Mouth Open', '85%'],
+        ['#5', '00:23', 'Neutral', 'None', '91%']
+      ].map((row) => `
+              <tr class="border-t border-slate-100 hover:bg-slate-50 transition-all">
+                  <td class="p-4 text-slate-800 font-mono text-[10px]">${row[0]}</td>
+                  <td class="p-4 text-slate-500 font-mono text-[10px]">${row[1]}</td>
+                  <td class="p-4"><span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider ${getBadgeStyle(row[2])}">${row[2]}</span></td>
+                  <td class="p-4 text-slate-600 italic text-[10px]">${row[3]}</td>
+                  <td class="p-4"><div class="flex items-center gap-2"><div class="flex-1 h-1 bg-slate-100 rounded-full overflow-hidden w-12"><div class="h-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.3)]" style="width: ${row[4]}"></div></div><span class="font-bold text-cyan-600 text-[10px]">${row[4]}</span></div></td>
+              </tr>
+          `).join('');
+      document.getElementById('emotionTableBody').innerHTML = emotionMarkup;
+
+      const eyeMarkup = timestamps.map((ts, i) => {
+        const blinkScore = 20 + Math.floor(Math.random() * 60);
+        const focusArea = ['Center', 'Top Left', 'Bottom Right', 'Center', 'Top Right'][i];
+        const fixationScore = 80 + Math.floor(Math.random() * 15);
+        const gazeStability = 75 + Math.floor(Math.random() * 20);
+
+        return `
+                <tr class="border-t border-slate-100 hover:bg-slate-50 transition-all">
+                    <td class="p-4 text-slate-800 font-mono text-[10px]">#${i + 1}</td>
+                    <td class="p-4 text-slate-500 font-mono text-[10px]">${ts}</td>
+                    <td class="p-4"><span class="font-bold text-cyan-600 text-[10px]">${blinkScore}</span></td>
+                    <td class="p-4 text-slate-700 font-bold text-[10px]">${focusArea}</td>
+                    <td class="p-4 font-bold text-cyan-600 text-[10px]">${fixationScore}</td>
+                    <td class="p-4 font-bold text-purple-600 text-[10px]">${gazeStability}</td>
+                </tr>
+              `;
+      }).join('');
+      document.getElementById('eyeTrackTableBody').innerHTML = eyeMarkup;
+
+      const oralMarkup = timestamps.map((ts, i) => {
+        const tightness = (40 + Math.random() * 50).toFixed(0);
+        const stress = (20 + Math.random() * 40).toFixed(0);
+        const status = tightness > 75 ?
+          `<span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-rose-50 text-rose-600 border border-rose-100">CLENCHED</span>` :
+          `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-50 text-slate-500 border border-slate-100">NORMAL</span>`;
+
+        return `
+                <tr class="border-t border-slate-100 hover:bg-rose-50 transition-all">
+                    <td class="p-4 text-slate-800 font-mono text-[10px]">#${i + 1}</td>
+                    <td class="p-4 text-slate-500 font-mono text-[10px]">${ts}</td>
+                    <td class="p-4 text-slate-700 font-bold text-[10px]">${tightness}</td>
+                    <td class="p-4 text-slate-700 font-bold text-[10px]">${stress}</td>
+                    <td class="p-4">${status}</td>
+                </tr>
+              `;
+      }).join('');
+      document.getElementById('lipsTableBody').innerHTML = oralMarkup;
+
+      if (emotionChart) {
+        const d = [50 + Math.random() * 20, 15 + Math.random() * 15, 5 + Math.random() * 10];
+        emotionChart.data.datasets[0].data = d;
+        emotionChart.update();
+        const label = document.querySelector('#emotionDistributionChart + div span:first-child');
+        if (label) label.innerText = Math.round(d[0]) + '%';
+      }
+      if (eyeChart) {
+        const d = [60 + Math.random() * 30, 10 + Math.random() * 20];
+        eyeChart.data.datasets[0].data = d;
+        eyeChart.update();
+        const label = document.querySelector('#eyeMovementChart + div span:first-child');
+        if (label) label.innerText = Math.round(d[0]) + '%';
+      }
+      if (jawChart) {
+        const d = [70 + Math.random() * 20, 10 + Math.random() * 15];
+        jawChart.data.datasets[0].data = d;
+        jawChart.update();
+        const label = document.querySelector('#lipsJawChart + div span:first-child');
+        if (label) label.innerText = Math.round(d[0]) + '%';
+      }
+    }
+
+    function getBadgeStyle(emotion) {
+      switch (emotion.toLowerCase()) {
+        case 'neutral': return 'bg-emerald-50 text-emerald-600 border border-emerald-100';
+        case 'anger': return 'bg-amber-50 text-amber-600 border border-amber-100';
+        case 'fear': return 'bg-rose-50 text-rose-600 border border-rose-100';
+        case 'surprise': return 'bg-purple-50 text-purple-600 border border-purple-100';
+        default: return 'bg-slate-50 text-slate-600 border border-slate-100';
+      }
+    }
+
+    function updateStatusUI(status, label) {
+      const tag = document.getElementById('statusTag');
+      const dot = document.getElementById('statusDot');
+      if (!tag || !dot) return;
+      tag.innerText = label;
+      if (status === 'live') dot.className = "w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]";
+      else if (status === 'vault') dot.className = "w-2 h-2 bg-cyan-400 rounded-full shadow-[0_0_10px_rgba(0,219,255,0.5)]";
+      else dot.className = "w-2 h-2 bg-gray-500 rounded-full";
+    }
+
+    function toggleFullScreen() {
+      const container = document.querySelector(".video-container");
+      if (container) {
+        if (!document.fullscreenElement) container.requestFullscreen();
+        else document.exitFullscreen();
+      }
+    }
+
+    function resetConfigurations() {
+      const modules = ["toggleFaceMesh", "toggleEyeGaze", "toggleLipsJaw", "toggleEmotions"];
+      modules.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.checked = (id === "toggleEmotions");
+      });
+    }
+
+    function openVaultSelection() {
+      VaultComponent.open((item) => {
+        if (item.type !== 'video') { alert("Please select a video file."); return; }
+
+        Loader.show("Loading Evidence");
+
+        const video = document.getElementById("webcam");
+        if (mediaStream) { mediaStream.getTracks().forEach(track => track.stop()); mediaStream = null; }
+        video.srcObject = null;
+        video.src = item.filepath;
+        video.setAttribute('controls', 'true');
+        video.style.transform = "none";
+        updateStatusUI('vault', 'Vault Analysis');
+        cameraOn = true;
+        document.getElementById("camOffState").classList.add("hidden");
+        document.getElementById("camOnState").classList.remove("hidden");
+        document.getElementById("camOnState").classList.add("flex");
+
+        const analyseBtn = document.getElementById("analyseBtn");
+        if (analyseBtn) analyseBtn.classList.remove("hidden");
+
+        video.oncanplay = () => {
+          Loader.hide();
+          video.play();
+        };
+      });
+    }
+
+    function clearVault() {
+      const video = document.getElementById("webcam");
+      const off = document.getElementById("camOffState");
+      const on = document.getElementById("camOnState");
+      const mainBtn = document.getElementById("mainCamBtn");
+      const camBtn = document.getElementById("camBtn");
+
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+      }
+
+      video.srcObject = null;
+      video.src = "";
+      video.removeAttribute('controls');
+      cameraOn = false;
+
+      on.classList.add("hidden");
+      on.classList.remove("flex");
+      off.classList.remove("hidden");
+
+      if (mainBtn) {
+        mainBtn.innerHTML = '<i class="fas fa-video-slash"></i> Camera Off';
+        mainBtn.classList.add("bg-rose-500/10", "text-rose-500", "border-rose-500/30");
+        mainBtn.classList.remove("bg-cyan-500/10", "text-cyan-500", "border-cyan-500/30", "hover:bg-cyan-500", "hover:text-white");
+      }
+      if (camBtn) camBtn.classList.remove("active");
+
+      video.style.transform = "none";
+      updateStatusUI('ready', 'System Ready');
+
+      if (isRecording) handleSessionToggle();
+    }
+
+    // Data Simulation Loop
+    setInterval(() => {
+      if (!cameraOn) return;
+      const latency = document.querySelector('.flex.justify-between.w-32 span:last-child');
+      if (latency) {
+        latency.innerText = (10 + Math.floor(Math.random() * 5)) + "MS";
+      }
+    }, 2000);
+
+    // Circular Charts Initialization
+    let emotionChart, eyeChart, jawChart;
+
+    function initCircularCharts() {
+
+      const emotionCtx = document.getElementById('emotionDistributionChart').getContext('2d');
+      emotionChart = new Chart(emotionCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Neutral', 'Anger', 'Fear'],
+          datasets: [{
+            data: [60, 25, 15],
+            backgroundColor: ['#34d399', '#fbbf24', '#f87171'],
+            borderWidth: 0,
+            cutout: '82%',
+            borderRadius: 8,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              ...tooltipStyle,
+              callbacks: {
+                label: function (context) {
+                  return context.label + ': ' + context.parsed + '%';
+                }
+              }
+            }
+          }
+        }
+      });
+
+      const eyeCtx = document.getElementById('eyeMovementChart').getContext('2d');
+      eyeChart = new Chart(eyeCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Steady Gaze', 'Rapid Blinking'],
+          datasets: [{
+            data: [70, 30],
+            backgroundColor: ['#22d3ee', '#fbbf24'],
+            borderWidth: 0,
+            cutout: '82%',
+            borderRadius: 8,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              ...tooltipStyle,
+              callbacks: {
+                label: function (context) {
+                  return context.label + ': ' + context.parsed + '%';
+                }
+              }
+            }
+          }
+        }
+      });
+
+      const jawCtx = document.getElementById('lipsJawChart').getContext('2d');
+      jawChart = new Chart(jawCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Normal', 'Tensed'],
+          datasets: [{
+            data: [85, 15],
+            backgroundColor: ['#34d399', '#f43f5e'],
+            borderWidth: 0,
+            cutout: '82%',
+            borderRadius: 8,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              ...tooltipStyle,
+              callbacks: {
+                label: function (context) {
+                  return context.label + ': ' + context.parsed + '%';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Tooltip Styles
+    const tooltipStyle = {
+      backgroundColor: 'rgba(255, 255, 255, 0.98)',
+      borderColor: 'rgba(0, 118, 214, 0.2)',
+      borderWidth: 1,
+      titleColor: '#0076d6',
+      bodyColor: '#1e293b',
+      padding: 12,
+      cornerRadius: 12
+    };
+
+    // Initial Load
+    document.addEventListener("DOMContentLoaded", async () => {
+      const result = await eel.get_current_user()();
+      const user = (result.success && result.data) ? result.data : null;
+
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+      const activeMember = document.querySelector('.active-member-info span.ml-1');
+      if (activeMember) activeMember.textContent = `${user.firstName} ${user.lastName} • Unit #${user.username.toUpperCase()}`;
+
+      populateDevices();
+      initCircularCharts();
+      populateMockTables();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const autoFile = urlParams.get('file');
+      if (autoFile) {
+        Loader.show("Loading Evidence");
+        const video = document.getElementById("webcam");
+        if (mediaStream) { mediaStream.getTracks().forEach(track => track.stop()); mediaStream = null; }
+        video.srcObject = null;
+        video.src = autoFile;
+        video.setAttribute('controls', 'true');
+        video.style.transform = "none";
+        updateStatusUI('vault', 'Vault Analysis');
+        cameraOn = true;
+        document.getElementById("camOffState").classList.add("hidden");
+        document.getElementById("camOnState").classList.remove("hidden");
+        document.getElementById("camOnState").classList.add("flex");
+
+        const analyseBtn = document.getElementById("analyseBtn");
+        if (analyseBtn) analyseBtn.classList.remove("hidden");
+
+        video.oncanplay = () => {
+          Loader.hide();
+          video.play();
+          startAnalysisProcessing();
+        };
+      }
+
+      startAnalysisProcessing();
+    });
+  </script>
+</body>
+
+</html>

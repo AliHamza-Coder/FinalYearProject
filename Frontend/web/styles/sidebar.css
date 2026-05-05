@@ -1,0 +1,175 @@
+/* ============================================================
+   DECEPTRON - GLOBAL SIDEBAR STYLES
+   Extracting shared navigation and layout logic
+   ============================================================ */
+
+:root {
+    --sidebar-width: 260px;
+}
+
+/* Sidebar Container */
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border-subtle);
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(20px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
+}
+
+.sidebar::-webkit-scrollbar { 
+    display: none; 
+}
+
+/* Main Content Layout Shifting */
+.main-content {
+    margin-left: var(--sidebar-width);
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-width: 100%;
+    transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Navigation Items */
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0.6rem 1.5rem;
+    color: var(--text-dim);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+}
+
+.nav-item:hover,
+.nav-item.active {
+    background: rgba(0, 118, 214, 0.08);
+    color: var(--primary-blue);
+    border-left-color: var(--primary-blue);
+}
+
+.nav-item i {
+    width: 24px;
+    font-size: 1rem;
+    margin-right: 1rem;
+}
+
+/* Sidebar Transition & Collapse Logic */
+body.sidebar-collapsed .sidebar {
+    transform: translateX(-100%);
+}
+
+body.sidebar-collapsed .main-content {
+    margin-left: 0;
+    padding-left: 4.5rem;
+}
+
+/* Collapse Button (inside sidebar) */
+.collapse-btn {
+    position: absolute;
+    top: 1.25rem;
+    right: 0.5rem;
+    width: 26px;
+    height: 26px;
+    background: var(--primary-blue);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow: 0 4px 15px rgba(0, 118, 214, 0.3);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.collapse-btn:hover {
+    background: var(--accent-cyan);
+    transform: scale(1.1);
+}
+
+/* Restore Button (when collapsed) */
+#restore-sidebar {
+    position: fixed;
+    top: 1.5rem;
+    left: 1rem;
+    width: 38px;
+    height: 38px;
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 55;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 118, 214, 0.4);
+}
+
+body.sidebar-collapsed #restore-sidebar {
+    display: flex;
+}
+
+/* Logo Section */
+.logo-section {
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 120px;
+    border-bottom: 2px solid rgba(0, 118, 214, 0.05);
+}
+
+.logo-section img {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 8px rgba(0, 118, 214, 0.2));
+}
+
+.sidebar {
+    border-right: 2px solid rgba(0, 219, 255, 0.2);
+}
+
+/* Responsive Sidebar */
+@media (max-width: 1024px) {
+    :root {
+        --sidebar-width: 80px;
+    }
+
+    .sidebar span,
+    .sidebar .logo-text,
+    .sidebar .nav-category {
+        display: none;
+    }
+
+    .nav-item {
+        justify-content: center;
+        padding: 1.25rem 0;
+    }
+
+    .nav-item i {
+        margin-right: 0;
+        font-size: 1.3rem;
+    }
+
+    .logo-section {
+        justify-content: center;
+        padding: 1.5rem 0 !important;
+    }
+}

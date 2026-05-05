@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deceptron - Voice Analysis</title>
+    <link rel="icon" href="../assets/images/Eye icon.png">
+    <link rel="stylesheet" href="../styles/output.css">
+    <script src="../scripts/chart.min.js"></script>
+    <script src="../scripts/wavesurfer.min.js"></script>
+    <link rel="stylesheet" href="../vendor/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="../styles/sidebar.css">
+    <script type="text/javascript" src="/eel.js"></script>
+    <style>
+        :root {
+            --primary-blue: #2563eb; /* Professional Royal Blue */
+            --accent-cyan: #0ea5e9; /* Sky Blue */
+            --accent-rose: #ef4444;
+            --sidebar-width: 260px;
+
+            /* Vibrant University Pro Theme */
+            --bg-main: #0f172a; /* Deep Navy */
+            --text-main: #ffffff;
+            --text-dim: #94a3b8;
+            --sidebar-bg: #0f172a;
+            --card-bg: #1e293b; /* Solid Professional Surface */
+            --border-subtle: #334155; /* Visible Slate Border */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            overflow: hidden;
+            width: 100vw;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.05) 0, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.05) 0, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .heading-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        button, a, select, .nav-item, .cursor-pointer {
+            cursor: pointer !important;
+        }
+
+        .glass {
+            background: var(--card-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass:hover {
+            border-color: var(--primary-blue);
+            transform: translateY(-2px);
+        }
+
+        #waveform {
+            width: 100%;
+            height: 80px;
+            background: transparent;
+            border-radius: 1rem;
+            margin-top: 0.5rem;
+            cursor: pointer;
+        }
+
+        .waveform-container {
+            background: rgba(0, 0, 0, 0.2) !important;
+            border: 1px solid var(--border-subtle) !important;
+            border-radius: 1rem;
+            padding: 1.5rem;
+        }
+
+        .btn-control {
+            padding: 0.85rem 1.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.65rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 118, 214, 0.2);
+        }
+
+        .btn-outline {
+            border: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary-blue);
+            background: var(--primary-blue);
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-primary {
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            color: var(--accent-cyan);
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-blue);
+            color: #ffffff;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+            transform: translateY(-1px);
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+        }
+
+        .metric-card {
+            padding: 1.25rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            border-color: var(--primary-blue);
+            transform: translateY(-2px);
+        }
+
+        .frame-table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 1rem;
+            border: 1px solid var(--border-subtle);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .frame-table th {
+            background: var(--bg-main);
+            color: var(--primary-blue);
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 1.25rem;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .frame-table td {
+            padding: 1.15rem 1.25rem;
+            font-size: 0.75rem;
+            color: #ffffff;
+            border-bottom: 1px solid var(--border-subtle);
+            transition: all 0.2s ease;
+        }
+
+        main > section,
+        main > div.px-4.pb-8 {
+            margin-bottom: 1.75rem;
+        }
+
+        .frame-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--primary-blue);
+        }
+
+        .status-pill {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.6rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-pill-anger { background: #fee2e2; color: #dc2626; border: 1.5px solid #fecaca; }
+        .status-pill-stress { background: #f5f3ff; color: #7c3aed; border: 1.5px solid #ede9fe; }
+        .status-pill-neutral { background: #f1f5f9; color: #475569; border: 1.5px solid #e2e8f0; }
+        .status-pill-calm { background: #ecfdf5; color: #059669; border: 1.5px solid #d1fae5; }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #334155;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 118, 214, 0.15);
+            border-radius: 10px;
+        }
+    
+        /* Select Dropdown Styling */
+        select {
+            background-color: var(--card-bg) !important;
+            border: 1px solid var(--border-subtle) !important;
+            color: var(--text-main) !important;
+            padding: 0.6rem 2.5rem 0.6rem 1.25rem;
+            border-radius: 0.875rem;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%232563eb' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-position: right 1rem center;
+            background-repeat: no-repeat;
+            background-size: 0.8rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: all 0.3s ease;
+            min-width: 200px;
+            cursor: pointer;
+        }
+
+        select:hover {
+            border-color: var(--primary-blue) !important;
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.15);
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary-blue) !important;
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.25);
+        }
+
+        select option {
+            background: var(--bg-main);
+            color: var(--text-main);
+            padding: 0.75rem;
+            font-size: 0.8rem;
+        }
+</style>
+</head>
+
+<body>
+    <!-- Sidebar Component Container -->
+    <!-- Common utilities -->
+    <script src="../js/common/constants.js"></script>
+    <script src="../js/common/utils.js"></script>
+    <script src="../js/common/api.js"></script>
+    <script src="../js/common/auth.js"></script>
+    <script src="../js/common/media-recorder.js"></script>
+    <!-- Components -->
+    <script src="../js/components/sidebar.js"></script>
+    <script src="../js/components/vault-component.js"></script>
+    <script src="../js/components/loader.js"></script>
+
+    <script>
+        // Anti-Flash Theme Optimization
+        (function () {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+            if (savedTheme === 'light' || (!savedTheme && prefersLight)) {
+                document.body.classList.add('light-mode');
+            }
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                document.body.classList.add('sidebar-collapsed');
+            }
+        })();
+        initSidebar();
+    </script>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="p-8 pb-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold heading-font text-white tracking-tight">Voice Analysis</h1>
+                <div class="flex items-center mt-2 text-[10px] text-cyan-400 font-bold tracking-[0.2em] uppercase">
+                    Audio Processing Ready
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-4">
+                    <button class="btn-outline px-6 py-2.5 group" onclick="openVaultSelection()">
+                        <i class="fas fa-folder-open mr-2 group-hover:text-cyan-400 transition-colors"></i> Evidence
+                        Vault
+                    </button>
+                    <input type="file" id="audioInput" class="hidden" accept="audio/*">
+                    <div class="relative">
+                        <select id="micSelect">
+                            <option>Loading microphones...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Waveform Section -->
+        <section class="px-4">
+            <div class="glass p-8">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="flex items-center space-x-6">
+                        <button id="recordBtn"
+                            class="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all duration-300 shadow-[0_0_15px_rgba(244,63,94,0.1)]"
+                            onclick="toggleRecording()">
+                            <i class="fas fa-microphone text-xs"></i>
+                        </button>
+                        <!-- Pause Button -->
+                        <button id="pauseBtn"
+                            class="w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center hover:bg-amber-500 hover:text-white transition-all duration-300 hidden"
+                            onclick="togglePause()">
+                            <i class="fas fa-pause text-xs"></i>
+                        </button>
+                        <button id="playBtn"
+                            class="w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center hover:bg-cyan-500 hover:text-white transition-all duration-300 disabled:opacity-30"
+                            onclick="togglePlayback()" disabled>
+                            <i class="fas fa-play text-xs"></i>
+                        </button>
+                        <div class="h-6 w-[1px] bg-white/10"></div>
+                        <div id="statusLabel"
+                            class="text-[10px] font-extrabold uppercase tracking-[0.3em] text-cyan-400">System Ready
+                        </div>
+                    </div>
+                    <div class="text-right flex flex-col items-end">
+                        <p class="text-[10px] text-gray-500 uppercase font-bold tracking-[0.2em] mb-1">Duration</p>
+                        <div class="flex items-center space-x-3">
+                            <div id="recIndicator"
+                                class="flex items-center bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-md hidden">
+                                <span class="w-2 h-2 bg-rose-600 rounded-full animate-pulse mr-1.5"></span>
+                                <span class="text-[8px] font-bold text-rose-500 uppercase">REC</span>
+                            </div>
+                            <p id="timer" class="text-3xl font-mono text-white tracking-tighter">00:00:00</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- WaveSurfer Container -->
+                <div class="waveform-container bg-black/20 rounded-2xl p-4 border border-white/5">
+                    <div id="waveform"></div>
+                </div>
+                <div class="mt-4 flex flex-wrap gap-3">
+                    <button id="analyseAudioBtn"
+                        class="btn-primary px-6 py-2 rounded-xl text-[10px] font-bold uppercase"
+                        onclick="finalizeAnalysis()">
+                        <i class="fas fa-brain mr-2"></i> Analyse Audio
+                    </button>
+                    <button id="clearVaultBtn" class="btn-outline px-6 py-2 rounded-xl text-[10px] font-bold uppercase"
+                        onclick="resetUIState(); wavesurfer.empty();">
+                        <i class="fas fa-trash-alt mr-2"></i> Clear Vault
+                    </button>
+                </div>
+                <div
+                    class="mt-4 flex justify-between items-center text-[10px] text-gray-500 font-bold tracking-[0.2em] uppercase">
+                    <span class="flex items-center"><span class="w-1.5 h-1.5 bg-cyan-400 rounded-full mr-2"></span>
+                        L-CH: Active</span>
+                    <span>48000 Hz • 24 bit • Lossless HQ</span>
+                    <span>R-CH: Standby</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Acoustic Metrics Row -->
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-4">
+            <!-- Box 1: Fundamental Freq -->
+            <div class="glass p-6 group hover:-translate-y-1 transition-all duration-300 border-l-2 border-cyan-500">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 border border-cyan-500/20 group-hover:bg-cyan-500 group-hover:text-black transition-all duration-300 glow-cyan">
+                        <i class="fas fa-wave-square text-sm"></i>
+                    </div>
+                    <span class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Hz</span>
+                </div>
+                <p class="text-[9px] text-gray-500 uppercase font-black tracking-widest mb-1">Fundamental Freq (P0)</p>
+                <div class="flex items-baseline gap-2">
+                    <h2 id="valF0" class="text-2xl font-bold heading-font text-white">214.5</h2>
+                    <span class="text-[10px] text-emerald-500 font-bold">Stable</span>
+                </div>
+            </div>
+
+            <!-- Box 2: Voice Jitter -->
+            <div class="glass p-6 group hover:-translate-y-1 transition-all duration-300 border-l-2 border-purple-500">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20 group-hover:bg-purple-500 group-hover:text-white transition-all duration-300 glow-purple">
+                        <i class="fas fa-chart-line text-sm"></i>
+                    </div>
+                    <span class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">%</span>
+                </div>
+                <p class="text-[9px] text-gray-500 uppercase font-black tracking-widest mb-1">Voice Jitter (Stability)</p>
+                <div class="flex items-baseline gap-2">
+                    <h2 id="valJitter" class="text-2xl font-bold heading-font text-white">0.42</h2>
+                    <span class="text-[10px] text-emerald-500 font-bold">Optimal</span>
+                </div>
+            </div>
+
+            <!-- Box 3: Shimmer -->
+            <div class="glass p-6 group hover:-translate-y-1 transition-all duration-300 border-l-2 border-amber-500">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 border border-amber-500/20 group-hover:bg-amber-500 group-hover:text-black transition-all duration-300 glow-amber">
+                        <i class="fas fa-volume-up text-sm"></i>
+                    </div>
+                    <span class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">dB</span>
+                </div>
+                <p class="text-[9px] text-gray-500 uppercase font-black tracking-widest mb-1">Shimmer (dB)</p>
+                <div class="flex items-baseline gap-2">
+                    <h2 id="valShimmer" class="text-2xl font-bold heading-font text-white">1.2</h2>
+                    <span class="text-[10px] text-emerald-500 font-bold">Normal</span>
+                </div>
+            </div>
+
+            <!-- Box 4: Clarity (HNR) -->
+            <div class="glass p-6 group hover:-translate-y-1 transition-all duration-300 border-l-2 border-emerald-500">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300 glow-emerald">
+                        <i class="fas fa-stethoscope text-sm"></i>
+                    </div>
+                    <span class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">HNR</span>
+                </div>
+                <p class="text-[9px] text-gray-500 uppercase font-black tracking-widest mb-1">Spectral Clarity (HNR)</p>
+                <div class="flex items-baseline gap-2">
+                    <h2 id="valHNR" class="text-2xl font-bold heading-font text-white">24.5</h2>
+                    <span class="text-[10px] text-emerald-500 font-bold">+2.1</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Full-Width Transcription Feed -->
+        <section class="px-4">
+            <div class="glass overflow-hidden">
+                <div class="p-5 border-b border-white/5 flex justify-between items-center bg-white/5">
+                    <div class="flex items-center gap-6">
+                        <h3 class="text-xs font-black uppercase tracking-[0.25em] text-white flex items-center">
+                            <i class="fas fa-closed-captioning mr-3 text-cyan-400"></i> Forensic Transcription Engine
+                        </h3>
+                        <div class="h-4 w-[1px] bg-white/10"></div>
+                        <div class="flex items-center gap-2">
+                            <span class="status-pill status-pill-calm text-[9px] px-3 py-1">Acoustic Mapping: Domestic-Neutral</span>
+                            <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Reliability: 98.4%</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                        <span class="flex items-center gap-2"><i class="fas fa-clock"></i> 00:14:20</span>
+                        <span class="flex items-center gap-2"><i class="fas fa-globe"></i> English-US (Wave2)</span>
+                    </div>
+                </div>
+                <div id="transcript" class="p-10 min-h-[200px] max-h-[300px] overflow-y-auto space-y-6 font-medium text-xl leading-relaxed text-gray-300 italic custom-scrollbar">
+                    <p class="border-l-4 border-cyan-500/30 pl-8 py-3 bg-white/5 rounded-r-2xl">"The subject ID has been verified as Unit #HAMZA. Initial audio calibration complete."</p>
+                    <p class="border-l-4 border-transparent pl-8 py-3 opacity-60">"Please provide a detailed account of the events occurring between 0200 and 0400 hours."</p>
+                    <p class="border-l-4 border-transparent pl-8 py-3 opacity-60">"Spectral analysis of response confirms baseline vocal stability with zero micro-tremors detected."</p>
+                </div>
+                <div class="p-4 bg-black/40 border-t border-white/5 flex justify-between text-[10px] text-gray-400 uppercase font-black tracking-widest px-10">
+                    <div class="flex gap-8">
+                        <span>Total Words: 1,204</span>
+                        <span>Speaking Rate: 135 WPM</span>
+                        <span>Pause Index: 0.12s</span>
+                    </div>
+                    <div class="flex gap-4">
+                        <span class="text-cyan-400"><i class="fas fa-check-circle mr-1"></i> Sync Active</span>
+                        <span class="text-purple-400 font-mono">LATENCY: 12ms</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Frame-by-Frame Voice Table -->
+        <div class="px-4 pb-8">
+            <article class="glass p-8 border-white/5">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xs font-black uppercase tracking-[0.25em] text-white flex items-center">
+                        <i class="fas fa-list-ul mr-3 text-cyan-400"></i> Forenisc Vocal Timeline Analysis
+                    </h3>
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2">
+                           <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+                           <span class="text-[9px] text-cyan-400 font-black uppercase tracking-widest">Live Deep-Scan</span>
+                        </div>
+                        <button onclick="exportVoiceData()" class="btn-outline px-4 py-1.5 rounded-lg text-[9px]">
+                            <i class="fas fa-download mr-1"></i> Export Data
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="frame-table-container custom-scrollbar">
+                    <table class="frame-table">
+                        <thead>
+                            <tr>
+                                <th># SEG</th>
+                                <th>TIMESTAMP</th>
+                                <th>TRANSCRIPTION (WAV2VEC2)</th>
+                                <th>EMOTION STATE</th>
+                                <th>PITCH (F0)</th>
+                                <th>JITTER (%)</th>
+                                <th>CONFIDENCE</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="voiceTableBody">
+                            <!-- Mock segments injected on load -->
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <script>
+        // Init WaveSurfer
+        const wavesurfer = WaveSurfer.create({
+            container: '#waveform',
+            waveColor: '#1e293b',
+            progressColor: '#00DBFF',
+            cursorColor: '#00DBFF',
+            barWidth: 2,
+            barRadius: 3,
+            responsive: true,
+            height: 80,
+            barGap: 3
+        });
+
+        function updateChartTheme(isLight) {
+            const chartColor = isLight ? '#475569' : '#64748b';
+            const safeColor = isLight ? 'rgba(0, 118, 214, 0.05)' : 'rgba(255, 255, 255, 0.05)';
+            const hoverSafeColor = isLight ? 'rgba(0, 118, 214, 0.1)' : 'rgba(255, 255, 255, 0.1)';
+            // No charts to update currently
+        }
+
+        // Mock Logic & Audio Controls
+        let mediaStream = null;
+        let mediaRecorder;
+        let recordedChunks = [];
+        let isRecording = false;
+        let startTime;
+        let timerInterval;
+
+        function updateTimerUI() {
+            if (!startTime) return;
+            const now = new Date();
+            const diff = new Date(now - startTime);
+            const h = String(diff.getUTCHours()).padStart(2, '0');
+            const m = String(diff.getUTCMinutes()).padStart(2, '0');
+            const s = String(diff.getUTCSeconds()).padStart(2, '0');
+            document.getElementById("timer").innerText = `${h}:${m}:${s}`;
+        }
+
+        async function toggleRecording() {
+            const btn = document.getElementById('recordBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const status = document.getElementById('statusLabel');
+            const micId = document.getElementById('micSelect').value;
+            const recIndicator = document.getElementById('recIndicator');
+
+            if (!isRecording) {
+                try {
+                    const constraints = {
+                        audio: (micId && micId.trim()) ? { deviceId: { exact: micId } } : true,
+                        video: false
+                    };
+                    mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+                    const audioTracks = mediaStream.getAudioTracks();
+                    if (audioTracks.length === 0) {
+                        try {
+                            const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                            audioStream.getAudioTracks().forEach(track => mediaStream.addTrack(track));
+                        } catch (e) { console.warn("No audio:", e); }
+                    }
+                    recordedChunks = [];
+                    const options = { mimeType: 'audio/webm;codecs=opus' };
+                    if (!MediaRecorder.isTypeSupported(options.mimeType)) options.mimeType = 'audio/webm';
+                    mediaRecorder = new MediaRecorder(mediaStream, options);
+                    mediaRecorder.ondataavailable = (event) => { if (event.data.size > 0) recordedChunks.push(event.data); };
+                    mediaRecorder.start(1000);
+                    isRecording = true;
+                    btn.classList.add('bg-red-500', 'text-white', 'pulse-recording');
+                    btn.innerHTML = '<i class="fas fa-stop"></i>';
+                    status.innerText = "VoX Analysis Active...";
+                    status.classList.add('text-red-500');
+                    if (pauseBtn) pauseBtn.classList.remove('hidden');
+                    if (recIndicator) recIndicator.classList.remove('hidden');
+                    startTime = new Date();
+                    timerInterval = setInterval(updateTimerUI, 1000);
+                    document.getElementById('transcript').innerHTML = '<p class="text-cyan-400">Listening to audio input stream...</p>';
+                } catch (err) { console.error(err); alert("Microphone access denied."); }
+            } else {
+                if (mediaRecorder) mediaRecorder.stop();
+                if (mediaStream) { mediaStream.getTracks().forEach(track => track.stop()); mediaStream = null; }
+                isRecording = false;
+                btn.classList.remove('bg-red-500', 'text-white', 'pulse-recording');
+                btn.innerHTML = '<i class="fas fa-microphone"></i>';
+                if (pauseBtn) pauseBtn.classList.add('hidden');
+                if (recIndicator) recIndicator.classList.add('hidden');
+                clearInterval(timerInterval);
+                openSaveModal();
+            }
+        }
+
+        function togglePause() {
+            const pauseBtn = document.getElementById('pauseBtn');
+            const recIndicator = document.getElementById('recIndicator');
+            if (mediaRecorder.state === 'recording') {
+                mediaRecorder.pause();
+                pauseBtn.innerHTML = '<i class="fas fa-play text-sm"></i>';
+                pauseBtn.classList.add('bg-amber-500', 'text-white');
+                if (recIndicator) recIndicator.querySelector('span').classList.remove('animate-pulse');
+                clearInterval(timerInterval);
+            } else if (mediaRecorder.state === 'paused') {
+                mediaRecorder.resume();
+                pauseBtn.innerHTML = '<i class="fas fa-pause text-sm"></i>';
+                pauseBtn.classList.remove('bg-amber-500', 'text-white');
+                if (recIndicator) recIndicator.querySelector('span').classList.add('animate-pulse');
+                timerInterval = setInterval(updateTimerUI, 1000);
+            }
+        }
+
+        function openSaveModal() {
+            const modal = document.getElementById('saveModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); modal.querySelector('div').classList.remove('scale-95'); }, 10);
+        }
+
+        function closeSaveModal() {
+            const modal = document.getElementById('saveModal');
+            modal.classList.add('opacity-0'); modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        async function saveVoiceData() {
+            const subjectId = document.getElementById('subjectIdInput').value || "Unknown_Subject";
+            const filename = `voice_session_${subjectId}_${new Date().getTime()}.webm`;
+            const status = document.getElementById('statusLabel');
+            closeSaveModal();
+            status.innerText = "Encrypting & Saving to Vault...";
+            status.classList.remove('text-red-500'); status.classList.add('text-cyan-400');
+            Loader.show("Syncing Acoustic Data...");
+            try {
+                const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+                const size = blob.size;
+                const sizeMB = (size / (1024 * 1024)).toFixed(1) + " MB";
+                const initResult = await eel.initiate_upload(filename, sizeMB, 'audio', true)();
+                if (!initResult.success) throw new Error(initResult.message);
+                const uploadId = initResult.data.upload_id;
+                const CHUNK_SIZE = 1024 * 1024;
+                let offset = 0;
+                while (offset < size) {
+                     const chunk = blob.slice(offset, offset + CHUNK_SIZE);
+                     const reader = new FileReader();
+                     await new Promise((resolve, reject) => {
+                         reader.onload = async (e) => {
+                             try {
+                                 const result = await eel.append_upload_chunk(uploadId, e.target.result)();
+                                 if (!result.success) reject(new Error(result.message));
+                                 resolve();
+                             } catch (err) { reject(err); }
+                         };
+                         reader.onerror = reject;
+                         reader.readAsDataURL(chunk);
+                     });
+                     offset += CHUNK_SIZE;
+                     const progress = Math.min(100, Math.round((offset / size) * 100));
+                     status.innerText = `Saving to Vault... ${progress}%`;
+                }
+                const finalResult = await eel.finalize_upload(uploadId)();
+                if (finalResult.success) {
+                    Loader.hide();
+                    status.innerText = "Session Saved Successfully";
+                    status.classList.remove('text-cyan-400'); status.classList.add('text-emerald-500');
+                    wavesurfer.loadBlob(blob);
+                    const analyseBtn = document.getElementById("analyseAudioBtn");
+                    if (analyseBtn) analyseBtn.classList.remove("hidden");
+                    document.getElementById('playBtn').disabled = false;
+                } else throw new Error(finalResult.message);
+                setTimeout(() => resetUIState(), 3000);
+            } catch (error) {
+                console.error(error); Loader.hide();
+                status.innerText = "Vault Error: " + error.message; status.classList.add('text-rose-500');
+                setTimeout(() => resetUIState(), 3000);
+            }
+        }
+
+        function discardSession() {
+            if (confirm("Permanently discard this voice session?")) {
+                closeSaveModal(); recordedChunks = []; resetUIState();
+            }
+        }
+
+        function resetUIState() {
+            const status = document.getElementById('statusLabel');
+            status.innerText = "System Ready";
+            status.className = "text-[10px] font-extrabold uppercase tracking-[0.3em] text-cyan-400";
+            document.getElementById('timer').innerText = "00:00:00";
+            if (timerInterval) clearInterval(timerInterval);
+            document.getElementById('recIndicator').classList.add('hidden');
+        }
+
+        async function finalizeAnalysis() {
+            Loader.show("Processing audio...");
+            try {
+                // Mock Summary Updates
+                document.getElementById('valF0').innerText = "214.5 Hz";
+                document.getElementById('valJitter').innerText = "0.42 %";
+                document.getElementById('valShimmer').innerText = "1.2 dB";
+                document.getElementById('valHNR').innerText = "24.5";
+                
+                // Update Timeline Table
+                populateVoiceTable();
+
+                document.getElementById('transcript').innerHTML = `
+                    <p class="border-l-4 border-cyan-500 pl-6 py-2 bg-white/5 rounded-r-xl">"The witness appears to be speaking slowly... <span class="text-cyan-400 underline">vocal stability index</span> shows minor fluctuations in pitch during sensitive questions."</p>
+                    <p class="border-l-4 border-transparent pl-6 py-2 opacity-60">"Emotional mapping indicates high cognitive load but low deception probability."</p>
+                    <p class="border-l-4 border-transparent pl-6 py-2 opacity-60">"Final acoustic summary: Unit status verified with 98% spectral accuracy."</p>
+                `;
+                document.getElementById('playBtn').disabled = false;
+            } finally { Loader.hide(); }
+        }
+
+        const forensicPhrases = [
+            "Initializing vocal biometric scan...",
+            "Authenticating unit unit code...",
+            "Verifying identity markers...",
+            "Awaiting acoustic signal...",
+            "Analyzing emotional frequency waves...",
+            "Synthesizing transcript data...",
+            "Cross-referencing database units...",
+            "Calculating deception probability index..."
+        ];
+
+        function populateVoiceTable() {
+            const tbody = document.getElementById('voiceTableBody');
+            const segments = [
+                { time: "00:00:02", text: "Please state your name and Unit ID.", emotion: "Neutral", pitch: "185", jitter: "0.12", conf: "99", status: "STABLE" },
+                { time: "00:00:05", text: "Officer Hamza, Unit ID 7821-X.", emotion: "Calm", pitch: "192", jitter: "0.15", conf: "98", status: "VERIFIED" },
+                { time: "00:00:09", text: "I was present at the coordinates indicated.", emotion: "Stress", pitch: "245", jitter: "0.85", conf: "92", status: "ANOMALY" },
+                { time: "00:00:14", text: "The situation was under control until the breach.", emotion: "Anger", pitch: "298", jitter: "1.24", conf: "94", status: "HIGH_STRESS" },
+                { time: "00:00:18", text: "Authorization was granted by the central core.", emotion: "Neutral", pitch: "210", jitter: "0.34", conf: "97", status: "STABLE" },
+                { time: "00:00:22", text: "End of report summary for unit unit.", emotion: "Calm", pitch: "188", jitter: "0.18", conf: "99", status: "VERIFIED" }
+            ];
+
+            tbody.innerHTML = segments.map((s, i) => `
+                <tr class="group">
+                    <td class="font-mono text-cyan-500 font-bold">#SEG_${String(i + 1).padStart(3, '0')}</td>
+                    <td class="font-mono text-gray-500">${s.time}</td>
+                    <td class="text-white italic">"${s.text}"</td>
+                    <td>
+                        <span class="status-pill status-pill-${s.emotion.toLowerCase()}">${s.emotion}</span>
+                    </td>
+                    <td class="font-mono">${s.pitch} Hz</td>
+                    <td class="font-mono">${s.jitter} %</td>
+                    <td class="font-bold text-cyan-400">${s.conf}%</td>
+                    <td>
+                        <span class="text-[9px] font-black uppercase tracking-tighter ${s.status === 'ANOMALY' || s.status === 'HIGH_STRESS' ? 'text-rose-500' : 'text-emerald-500'}">
+                            ${s.status}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function exportVoiceData() {
+            const toast = document.createElement('div');
+            toast.className = "fixed bottom-10 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl z-[1000000]";
+            toast.innerHTML = "<i class='fas fa-check-circle mr-2'></i> Forensic Data Exported to Unit CSV";
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function openVaultSelection() {
+            VaultComponent.open((item) => {
+                if (item.type !== 'audio') { alert("Select an audio file."); return; }
+                Loader.show("Syncing Acoustic Data");
+                document.getElementById('statusLabel').innerText = `Loaded from Vault: ${item.filename}`;
+                wavesurfer.load(item.filepath);
+                wavesurfer.on('ready', () => { Loader.hide(); finalizeAnalysis(); });
+            });
+        }
+
+        function openPlayer(filename, type) {
+            const modal = document.getElementById('playerModal');
+            const video = document.getElementById('vaultVideo');
+            const audioUI = document.getElementById('audioPlayerUI');
+            const audio = document.getElementById('vaultAudio');
+            document.getElementById('playerTitle').textContent = `Now Playing: ${filename}`;
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            if (type === 'video') { video.classList.remove('hidden'); audioUI.classList.add('hidden'); video.play(); }
+            else { audioUI.classList.remove('hidden'); video.classList.add('hidden'); audio.play(); }
+        }
+
+        function closePlayer() {
+            const modal = document.getElementById('playerModal');
+            document.getElementById('vaultVideo').pause();
+            document.getElementById('vaultAudio').pause();
+            modal.classList.add('hidden'); modal.classList.remove('flex');
+        }
+
+        document.getElementById('audioInput').onchange = e => {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('statusLabel').innerText = `Loaded: ${file.name}`;
+                wavesurfer.loadBlob(file);
+                setTimeout(finalizeAnalysis, 1500);
+            }
+        };
+
+        function togglePlayback() {
+            wavesurfer.playPause();
+            const btn = document.getElementById('playBtn');
+            btn.innerHTML = wavesurfer.isPlaying() ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+        }
+
+        wavesurfer.on('finish', () => { if (document.getElementById('playBtn')) document.getElementById('playBtn').innerHTML = '<i class="fas fa-play"></i>'; });
+
+        function toggleSidebar() {
+            document.body.classList.toggle('sidebar-collapsed');
+            localStorage.setItem('sidebarCollapsed', document.body.classList.contains('sidebar-collapsed'));
+        }
+
+        async function populateMicrophones() {
+            const select = document.getElementById('micSelect');
+            select.innerHTML = '';
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const audioDevices = devices.filter(d => d.kind === 'audioinput');
+                audioDevices.forEach((device, index) => {
+                    const label = (device.label || `Microphone ${index + 1}`).toLowerCase();
+                    if (label.includes('virtual') || label.includes('fliflik')) return;
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.text = device.label || `Microphone ${index + 1}`;
+                    select.appendChild(option);
+                });
+                if (audioDevices.length > 0) {
+                    try {
+                        const result = await eel.load_preferences()();
+                        if (result.success && result.preferences && result.preferences.default_mic) {
+                            if (audioDevices.some(d => d.deviceId === result.preferences.default_mic)) select.value = result.preferences.default_mic;
+                        }
+                    } catch (e) { console.error(e); }
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const result = await eel.get_current_user()();
+            const user = (result.success && result.data) ? result.data : null;
+            if (!user) { window.location.href = 'login.html'; return; }
+            const activeMember = document.querySelector('.active-member-info span.ml-1');
+            if (activeMember) activeMember.textContent = `${user.firstName} ${user.lastName} • Unit #${user.username.toUpperCase()}`;
+            populateMicrophones();
+            populateVoiceTable(); // Load initial mockup
+            const autoFile = new URLSearchParams(window.location.search).get('file');
+            if (autoFile) {
+                Loader.show("Syncing Acoustic Data");
+                wavesurfer.load(autoFile);
+                wavesurfer.once('ready', () => { Loader.hide(); finalizeAnalysis(); });
+            }
+        });
+    </script>
+    <!-- Media Player Modal -->
+    <div id="playerModal" class="fixed inset-0 z-[100000] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-md" onclick="closePlayer()"></div>
+        <div
+            class="player-modal relative w-full max-w-4xl p-6 rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
+            <div class="flex justify-between items-center mb-6 px-2">
+                <h3 id="playerTitle" class="text-sm font-bold text-white uppercase tracking-wider">Acoustic Player</h3>
+                <button onclick="closePlayer()" class="text-gray-400 hover:text-white transition-colors"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div class="media-container mx-auto bg-black flex items-center justify-center">
+                <video id="vaultVideo" class="w-full h-full hidden" controls></video>
+                <div id="audioPlayerUI" class="hidden flex-col items-center justify-center w-full h-full space-y-8">
+                    <div
+                        class="w-32 h-32 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-400 border-2 border-cyan-500/20 shadow-[0_0_30px_rgba(0,219,255,0.1)]">
+                        <i class="fas fa-microphone text-5xl"></i>
+                    </div>
+                    <audio id="vaultAudio" class="w-3/4 accent-cyan-500" controls></audio>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Saving Voice Session -->
+    <div id="saveModal"
+        class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[99999] hidden flex items-center justify-center opacity-0 transition-all duration-300">
+        <div
+            class="bg-[#0b121f] border border-white/10 p-10 rounded-3xl w-full max-w-lg transform scale-95 transition-all duration-300 shadow-2xl">
+            <h2 class="text-2xl font-bold heading-font text-white mb-2">
+                Save Voice Record
+            </h2>
+            <p class="text-xs text-gray-400 mb-8">
+                Finalize and encrypt the vocal analysis for permanent storage.
+            </p>
+
+            <div class="space-y-5">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Subject
+                        Identifier</label>
+                    <input id="subjectIdInput" type="text" placeholder="Enter name or ID..."
+                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-400 focus:outline-none transition-all" />
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Case Code</label>
+                        <input type="text" value="#VOICE-XQ-22"
+                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-400 focus:outline-none" />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Storage
+                            Status</label>
+                        <input type="text" value="Secure Vault" readonly
+                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-gray-600" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-10 flex flex-col space-y-3">
+                <button
+                    class="w-full py-4 bg-cyan-500 text-[#05080f] text-xs font-bold uppercase rounded-xl shadow-lg shadow-cyan-500/30 transition-all font-bold"
+                    onclick="saveVoiceData()">
+                    Save Record
+                </button>
+                <div class="flex space-x-3">
+                    <button
+                        class="flex-1 py-3 bg-white/5 hover:bg-white/10 text-[10px] font-bold uppercase rounded-xl transition-all text-gray-400"
+                        onclick="closeSaveModal()">
+                        Continue Recording
+                    </button>
+                    <button
+                        class="flex-1 py-3 bg-red-500/10 hover:bg-red-500/20 text-[10px] font-bold uppercase rounded-xl transition-all text-red-500 border border-red-500/20"
+                        onclick="discardSession()">
+                        Discard & Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+
+</html>

@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deceptron - Media Uploads</title>
+    <link rel="icon" href="../assets/images/Eye icon.png">
+    <link rel="stylesheet" href="../styles/output.css">
+    <link rel="stylesheet" href="../vendor/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="../styles/sidebar.css">
+    <script src="../scripts/wavesurfer.min.js"></script>
+    <script type="text/javascript" src="/eel.js"></script>
+    <style>
+    :root {
+        --primary-blue: #2563eb; /* Professional Royal Blue */
+        --accent-cyan: #0ea5e9; /* Sky Blue */
+        --accent-rose: #ef4444;
+        --sidebar-width: 260px;
+        
+        /* Vibrant University Pro Theme */
+        --bg-main: #0f172a; /* Deep Navy */
+        --text-main: #ffffff;
+        --text-dim: #94a3b8;
+        --sidebar-bg: #0f172a;
+        --card-bg: #1e293b; /* Solid Professional Surface */
+        --border-subtle: #334155; /* Visible Slate Border */
+        --input-bg: #0f172a;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background: var(--bg-main);
+        color: var(--text-main);
+        margin: 0;
+        overflow: hidden;
+        width: 100vw;
+        background-image: 
+            radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.05) 0, transparent 50%),
+            radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.05) 0, transparent 50%);
+        background-attachment: fixed;
+    }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 5px #10b981; }
+            50% { box-shadow: 0 0 20px #10b981; }
+            100% { box-shadow: 0 0 5px #10b981; }
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            overflow: hidden;
+            width: 100vw;
+        }
+
+    .heading-font { font-family: 'Orbitron', sans-serif; }
+
+        button, a, select, input[type="file"], .nav-item, .cursor-pointer, .upload-zone, .media-item, .filter-btn {
+            cursor: pointer !important;
+        }
+
+    .glass {
+        background: var(--card-bg);
+        border: 1px solid var(--border-subtle);
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+    }
+
+        .main-content {
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent-cyan);
+            background: #ffffff;
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(0, 118, 214, 0.1);
+        }
+
+        .collapse-btn:hover {
+            transform: scale(1.1);
+        }
+
+        #restore-sidebar {
+            position: fixed;
+            top: 1.5rem;
+            left: 1rem;
+            width: 38px;
+            height: 38px;
+            background: var(--accent-cyan);
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 55;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 219, 255, 0.4);
+        }
+
+        .fa-trash:hover {
+            color: #ef4444 !important;
+            filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.4));
+            cursor: pointer;
+        }
+
+        body.sidebar-collapsed #restore-sidebar {
+            display: flex;
+        }
+
+    .upload-zone {
+        background: var(--card-bg);
+        border: 2px dashed var(--border-subtle);
+        border-radius: 1.5rem;
+        padding: 4rem 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .upload-zone:hover {
+        border-color: var(--primary-blue);
+        background: rgba(255, 255, 255, 0.02);
+        transform: translateY(-2px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    }
+
+        .upload-zone::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 219, 255, 0.05), transparent);
+            transition: 0.8s;
+            pointer-events: none;
+        }
+
+        .upload-zone:hover::before {
+            left: 100%;
+        }
+
+    .btn-primary {
+        background: rgba(37, 99, 235, 0.1);
+        border: 1px solid rgba(37, 99, 235, 0.3);
+        color: var(--accent-cyan);
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-blue);
+        color: #ffffff;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .btn-outline {
+        border: 1px solid var(--border-subtle);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-main);
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-outline:hover {
+        border-color: var(--primary-blue);
+        background: var(--primary-blue);
+        color: #ffffff;
+        box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .filter-btn {
+        padding: 0.6rem 1.5rem;
+        border-radius: 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        transition: all 0.2s ease;
+        border: 1px solid var(--border-subtle);
+        color: var(--text-dim);
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .filter-btn.active {
+        background: var(--primary-blue);
+        color: white;
+        border-color: var(--primary-blue);
+        box-shadow: 0 4px 15px rgba(0, 118, 214, 0.2);
+    }
+
+    .media-item {
+        background: var(--card-bg);
+        border: 1px solid var(--border-subtle);
+        border-radius: 1.25rem;
+        padding: 1.25rem;
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .media-item:hover {
+        border-color: var(--primary-blue);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+    }
+
+        .media-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 219, 255, 0.05), transparent);
+            transition: 0.6s;
+            pointer-events: none;
+        }
+
+        .media-item:hover::before {
+            left: 100%;
+        }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: rgba(0, 118, 214, 0.1); border-radius: 10px; }
+
+    .logo-section img {
+        width: 100%;
+        height: 100%;
+        filter: drop-shadow(0 0 10px rgba(0, 219, 255, 0.5));
+    }
+
+    /* Custom Toast Styles */
+    .toast {
+        background: var(--card-bg);
+        border: 1px solid var(--primary-blue);
+        border-radius: 1rem;
+        padding: 1rem 1.5rem;
+        color: var(--text-main);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        animation: toast-in 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        pointer-events: auto;
+        max-width: 360px;
+    }
+
+    /* --- Forensic Glow System --- */
+    .glow-cyan { border: 1px solid var(--border-subtle) !important; }
+    .glow-purple { border: 1px solid var(--border-subtle) !important; }
+    .glow-blue { border: 1px solid var(--border-subtle) !important; }
+    .glow-emerald { border: 1px solid var(--border-subtle) !important; }
+
+    .group:hover .glow-cyan { border-color: var(--primary-blue) !important; background: rgba(37, 99, 235, 0.1) !important; }
+    .group:hover .glow-purple { border-color: var(--primary-blue) !important; background: rgba(37, 99, 235, 0.1) !important; }
+    .group:hover .glow-emerald { border-color: var(--primary-blue) !important; background: rgba(37, 99, 235, 0.1) !important; }
+
+        @keyframes toast-in {
+            from { transform: translateX(100%) scale(0.9); opacity: 0; }
+            to { transform: translateX(0) scale(1); opacity: 1; }
+        }
+
+        @keyframes toast-out {
+            from { transform: translateX(0) scale(1); opacity: 1; }
+            to { transform: translateX(100%) scale(0.9); opacity: 0; }
+        }
+
+        /* Modal Specific Styles */
+        body.sidebar-collapsed #restore-sidebar {
+            z-index: 90;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Component Container -->
+    <script src="../js/components/sidebar.js"></script>
+    <script src="../js/components/media-preview.js"></script>
+    <script src="../js/components/vault-component.js"></script>
+    <script src="../js/components/loader.js"></script>
+    <script>
+        initSidebar();
+    </script>
+
+    <main class="main-content">
+        <header class="p-8 pb-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold heading-font text-white tracking-tight">Evidence Vault</h1>
+                <div class="flex items-center mt-2 text-[10px] text-dim font-bold tracking-[0.2em] uppercase">
+                    Evidence Repository: Secured
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <div class="flex space-x-2 bg-white/5 p-1 rounded-xl border border-white/10">
+                    <button class="filter-btn active" onclick="filterMedia('all', this)">All</button>
+                    <button class="filter-btn" onclick="filterMedia('video', this)">Videos</button>
+                    <button class="filter-btn" onclick="filterMedia('audio', this)">Audio</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="max-w-5xl mx-auto w-full space-y-10 px-8">
+
+            <div class="upload-zone group cursor-pointer" onclick="document.getElementById('fileInput').click()">
+                <input type="file" id="fileInput" class="hidden">
+                <div class="w-16 h-16 bg-primary-blue/10 rounded-2xl flex items-center justify-center text-primary-blue mx-auto mb-6 transition-transform">
+                    <i class="fas fa-cloud-arrow-up text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold heading-font text-white tracking-tight mb-2">Secure Evidence Upload</h2>
+                <p class="text-dim text-xs">Drag and drop or browse secure files</p>
+                <p class="text-[10px] text-slate-500 mt-4 uppercase font-bold tracking-widest">MP4, AVI, WAV, MP3 • ENCRYPTED TUNNEL • MAX 1GB</p>
+            </div>
+
+            <div class="space-y-4" id="mediaList">
+                <!-- Records will be loaded here dynamically -->
+            </div>
+        </div>
+    </main>
+
+
+
+
+
+    <!-- Custom Toast Notification -->
+    <div id="toast-container" class="fixed bottom-10 right-10 z-[100] flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirm-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm modal-overlay"></div>
+        <div class="glass relative w-full max-w-md p-8 shadow-2xl transform transition-all duration-300 scale-95 opacity-0 modal-content">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-rose-100">
+                    <i class="fas fa-trash-can text-2xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold heading-font text-white mb-2 modal-title">Confirm Deletion</h3>
+                <p class="text-dim text-sm mb-8 modal-message">Are you sure you want to permanently delete this evidence? This action cannot be undone.</p>
+                <div class="flex gap-4">
+                    <button id="modal-cancel" class="flex-1 py-3 btn-outline text-[10px]">
+                        Cancel
+                    </button>
+                    <button id="modal-confirm" class="flex-1 py-3 bg-rose-600 text-white hover:bg-rose-700 transition-all font-bold uppercase tracking-widest text-[10px] rounded-xl shadow-lg shadow-rose-900/20">
+                        Delete Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function filterMedia(type, btn) {
+            // Update buttons
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Filter items
+            const items = document.querySelectorAll('.media-item');
+            items.forEach(item => {
+                if (type === 'all' || item.getAttribute('data-type') === type) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+
+        // Real Data Integration
+        const mediaList = document.getElementById('mediaList');
+        const fileInput = document.getElementById('fileInput');
+        const activeMemberName = document.querySelector('.active-member-info span.ml-1');
+        let newlyUploadedFiles = {}; // Store File objects for new uploads
+
+        function downloadFile(url, filename) {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename || 'download';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("Download Initialized", 'success');
+        }
+
+        async function loadUploads() {
+            const result = await eel.get_uploads()();
+            mediaList.innerHTML = '';
+            
+            if (!result.success || !result.data || result.data.length === 0) {
+                mediaList.innerHTML = `
+                    <div class="text-center py-10 opacity-40">
+                        <i class="fas fa-box-open text-4xl mb-4"></i>
+                        <p class="text-xs uppercase tracking-widest">No evidence found in vault</p>
+                    </div>
+                `;
+                return;
+            }
+
+            result.data.forEach(item => {
+                const isVideo = item.type === 'video';
+                const icon = isVideo ? 'fa-video' : 'fa-microphone';
+                const iconBg = isVideo ? 'bg-blue-600/10 text-blue-400 border-blue-500/20' : 'bg-emerald-600/10 text-emerald-400 border-emerald-500/20';
+                const analyzeBtn = isVideo ? 'Analyze Face Emotion' : 'Analyze Voice Stress';
+                const analyzeLoc = isVideo ? 'facial-expression.html' : 'voice-analysis.html';
+
+                // Path strategy:
+                // 1. Check if we have a real physical path from DB
+                // 2. Fallback to common uploads folder
+                const mediaSource = item.filepath || `../uploads/${item.filename}`;
+
+                const div = document.createElement('div');
+                div.className = 'media-item flex items-center justify-between group';
+                div.setAttribute('data-type', item.type);
+                div.innerHTML = `
+                    <div class="flex items-center space-x-5">
+                        <div class="w-14 h-14 rounded-2xl ${iconBg} flex items-center justify-center border-2 cursor-pointer group-hover:scale-110 transition-transform">
+                            <i class="fas ${icon} text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-white tracking-wide">${item.filename}</h3>
+                            <p class="text-[10px] text-dim uppercase font-bold tracking-widest mt-1">${item.size} • SECURED: ${item.timestamp}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <!-- 1. Download Button -->
+                        <button class="btn-outline px-6 py-3 text-[10px]" onclick="downloadFile('${mediaSource}', '${item.filename}')">
+                            <i class="fas fa-download mr-2 text-primary-blue"></i> Download
+                        </button>
+
+                        <!-- 2. Eye Icon (Preview) -->
+                        <button class="w-12 h-12 rounded-2xl bg-primary-blue/5 border-2 border-primary-blue/10 text-primary-blue hover:bg-primary-blue hover:text-white transition-all flex items-center justify-center group/eye" 
+                                onclick="${isVideo ? 'videoPreview' : 'audioPreview'}.open('${item.filename}', '${mediaSource}', {size: '${item.size}', date: '${item.timestamp}'})" title="Preview Media">
+                            <i class="fas fa-eye"></i>
+                        </button>
+
+                        <!-- 3. Trash Icon (Delete) -->
+                        <button class="w-12 h-12 rounded-xl bg-rose-600/10 text-rose-400 hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center" onclick="deleteRecord('${item.id}')" title="Delete record">
+                            <i class="fas fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
+                mediaList.appendChild(div);
+            });
+        }
+
+        // --- Custom UI Systems ---
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle text-red-400';
+            
+            toast.innerHTML = `
+                <i class="fas ${icon} text-primary-blue"></i>
+                <span class="text-xs font-bold uppercase tracking-wider">${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'toast-out 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards';
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+
+        function showConfirmModal(title, message, onConfirm) {
+            const modal = document.getElementById('confirm-modal');
+            const content = modal.querySelector('.modal-content');
+            modal.querySelector('.modal-title').textContent = title;
+            modal.querySelector('.modal-message').textContent = message;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+
+            const confirmBtn = document.getElementById('modal-confirm');
+            const cancelBtn = document.getElementById('modal-cancel');
+
+            const closeModal = () => {
+                content.classList.remove('scale-100', 'opacity-100');
+                content.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }, 300);
+            };
+
+            confirmBtn.onclick = () => {
+                onConfirm();
+                closeModal();
+            };
+            
+            cancelBtn.onclick = closeModal;
+            modal.querySelector('.modal-overlay').onclick = closeModal;
+        }
+
+        async function deleteRecord(id) {
+            showConfirmModal(
+                "Confirm Deletion",
+                "Are you sure you want to permanently delete this evidence? This action cannot be undone.",
+                async () => {
+                    const result = await eel.delete_upload_record(id)();
+                    if (result.success) {
+                        loadUploads();
+                        showToast("Evidence removed from vault");
+                    }
+                }
+            );
+        }
+
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const sizeStr = (file.size / (1024 * 1024)).toFixed(1) + " MB";
+            const type = file.type.startsWith('video') ? 'video' : 'audio';
+            
+            try {
+                // Show loader
+                Loader.show("Securing Evidence");
+
+                // 1. Initiate
+                const initRes = await eel.initiate_upload(file.name, sizeStr, type)();
+                if (!initRes.success) throw new Error(initRes.message);
+                
+                const uploadId = initRes.data.upload_id;
+                const chunkSize = 15 * 1024 * 1024; // 15MB chunks (UPPED FOR SPEED)
+                const totalChunks = Math.ceil(file.size / chunkSize);
+                
+                for (let i = 0; i < totalChunks; i++) {
+                    const progress = Math.round((i / totalChunks) * 100);
+                    Loader.updateProgress(progress);
+                    Loader.show("Securing Evidence");
+
+                    const start = i * chunkSize;
+                    const end = Math.min(file.size, start + chunkSize);
+                    const chunk = file.slice(start, end);
+                    
+                    // Read chunk as base64 - STRIP PREFIX IMMEDIATELY FOR SPEED
+                    const base64Chunk = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            const result = reader.result;
+                            resolve(result.substring(result.indexOf(',') + 1));
+                        };
+                        reader.readAsDataURL(chunk);
+                    });
+                    
+                    // Send to backend
+                    const chunkRes = await eel.append_upload_chunk(uploadId, base64Chunk)();
+                    if (!chunkRes.success) throw new Error(chunkRes.message);
+                }
+                
+                // 3. Finalize
+                Loader.updateProgress(100);
+                Loader.show("Finalizing");
+                const finalRes = await eel.finalize_upload(uploadId)();
+                if (!finalRes.success) throw new Error(finalRes.message);
+                
+                // Success
+                Loader.hide();
+                loadUploads();
+                showToast("Evidence secured in vault");
+                fileInput.value = '';
+
+            } catch (err) {
+                Loader.hide();
+                console.error("Upload failed:", err);
+                showToast(err.message || "Upload failed", 'error');
+            }
+        });
+
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check session
+            let user = null;
+            try {
+                const result = await eel.get_current_user()();
+                if (result.success) user = result.data;
+            } catch (err) {
+                console.error("Eel not ready or session check failed:", err);
+            }
+
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Set user info
+            if (activeMemberName && user) {
+                activeMemberName.textContent = `${user.firstName} ${user.lastName} • Unit #${user.username.toUpperCase()}`;
+            }
+
+            // Load real data
+            loadUploads();
+        });
+
+        // Logout logic is handled globally by sidebar.js
+
+    </script>
+</body>
+
+</html>
